@@ -1229,12 +1229,58 @@ function gameUpdate() {
         } 
         // For other combo counts, show a simpler indicator
         else if (comboCount > 1) {
-            // Draw a simpler combo indicator for non-milestone combos
-            ctx.font = 'bold 32px Arial';
+            // 创建赛博朋克风格的普通连击显示
+            const centerX = GAME_WIDTH / 2;
+            const centerY = 100;
+            
+            // 获取连击文本和设置字体大小(增大)
+            const comboText = `${comboCount} COMBO!`;
+            const fontSize = Math.min(56, 38 + comboCount * 2); // 比原来更大的字体
+            
+            // 保存当前绘图状态
+            ctx.save();
+            
+            // 绘制辉光背景
+            const textWidth = ctx.measureText(comboText).width * 1.2;
+            const bgWidth = textWidth * 1.3;
+            const bgHeight = fontSize * 1.2;
+            
+            // 创建霓虹渐变背景
+            const gradient = ctx.createLinearGradient(
+                centerX - bgWidth/2, centerY - bgHeight/2,
+                centerX + bgWidth/2, centerY + bgHeight/2
+            );
+            gradient.addColorStop(0, 'rgba(0, 20, 50, 0.6)');
+            gradient.addColorStop(0.5, 'rgba(0, 30, 60, 0.7)');
+            gradient.addColorStop(1, 'rgba(0, 20, 50, 0.6)');
+            
+            // 绘制背景
+            ctx.fillStyle = gradient;
+            ctx.fillRect(centerX - bgWidth/2, centerY - bgHeight/2, bgWidth, bgHeight);
+            
+            // 添加霓虹边框
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = '#00ffcc';
+            ctx.strokeRect(centerX - bgWidth/2, centerY - bgHeight/2, bgWidth, bgHeight);
+            
+            // 绘制霓虹字体
+            ctx.font = `bold ${fontSize}px "Orbitron", "Rajdhani", Arial, sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillStyle = '#4caf50'; // Use consistent green color
-            ctx.fillText(`${comboCount} COMBO!`, GAME_WIDTH / 2, 100);
+            
+            // 绘制发光效果
+            ctx.shadowColor = '#00ffcc';
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = '#00ffff';
+            ctx.fillText(comboText, centerX, centerY);
+            
+            // 绘制浅色边缘
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#ffffff';
+            ctx.strokeText(comboText, centerX, centerY);
+            
+            // 恢复绘图状态
+            ctx.restore();
         }
     }
     
