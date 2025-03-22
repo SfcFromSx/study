@@ -27,8 +27,8 @@
 
 /* 弹幕样式 */
 .bullet {
-    --bullet-width: 20px; /* 弹幕宽度 */
-    --bullet-height: 20px; /* 弹幕高度 */
+    --bullet-width: 40px; /* 弹幕宽度 */
+    --bullet-height: 40px; /* 弹幕高度 */
     --bullet-speed: 3; /* 弹幕速度 */
     
     /* 弹幕颜色 */

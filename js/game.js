@@ -4,8 +4,8 @@
  */
 
 // Game constants
-const GAME_WIDTH = 800;
-const GAME_HEIGHT = 600;
+let GAME_WIDTH = 800;
+let GAME_HEIGHT = 600;
 const PLAYER_SPEED = 5;
 const BULLET_SPEED = 3;
 const ENEMY_SPEED = 0.75;
@@ -70,14 +70,17 @@ const changeBankButton = document.getElementById('change-bank-button');
 const changeBankButtonGameover = document.getElementById('change-bank-button-gameover');
 const selectedBankNameElement = document.getElementById('selected-bank-name');
 const selectedSampleSizeElement = document.getElementById('selected-sample-size');
+const questionDetailContainer = document.getElementById('question-detail-container');
+const questionDetailContent = document.querySelector('.question-detail-content');
+const closeDetailBtn = document.getElementById('close-detail-btn');
 
 // Player class
 class Player {
     constructor() {
-        this.width = 40;
-        this.height = 40;
+        this.width = 120;
+        this.height = 120;
         this.x = GAME_WIDTH / 2 - this.width / 2;
-        this.y = GAME_HEIGHT - this.height - 10;
+        this.y = GAME_HEIGHT - this.height - 0; // Position player at the very bottom
         this.moveLeft = false;
         this.moveRight = false;
         
@@ -106,6 +109,7 @@ class Player {
         if (!this.image.complete || this.image.naturalHeight === 0) {
             this.drawFallbackShip();
         } else {
+            // Draw the player image with proper rendering
             ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
         }
     }
@@ -164,7 +168,7 @@ class Player {
         if (gamePaused) return;
         
         const bullet = new Bullet(
-            this.x + this.width / 2 - 5,
+            this.x + this.width / 2 - 30, // Centered bullet (half of 60px bullet width)
             this.y,
             bulletType
         );
@@ -177,8 +181,8 @@ class Bullet {
     constructor(x, y, type) {
         this.x = x;
         this.y = y;
-        this.width = 20; // Wider to fit text
-        this.height = 20; // Square shape
+        this.width = 60; // Doubled from 30 to 60
+        this.height = 60; // Doubled from 30 to 60
         this.speed = BULLET_SPEED;
         this.type = type;
     }
@@ -198,7 +202,7 @@ class Bullet {
         
         // Draw bullet text
         ctx.fillStyle = 'white';
-        ctx.font = '14px Arial';
+        ctx.font = 'bold 36px Arial, sans-serif'; // Increased from 20px to 36px for larger bullets
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(bulletInfo.text, this.x + this.width / 2, this.y + this.height / 2);
@@ -221,10 +225,10 @@ class Bullet {
 // Enemy class
 class Enemy {
     constructor(questionIndex) {
-        this.width = 40;
-        this.height = 40;
+        this.width = 60; // Increased from 40 to 60
+        this.height = 60; // Increased from 40 to 60
         this.x = Math.random() * (GAME_WIDTH - this.width);
-        this.y = -this.height;
+        this.y = -5; // Position slightly above the top edge to create transition effect
         
         // 根据难度设置速度
         if (selectedDifficulty === DIFFICULTY.EXPERT) {
@@ -263,11 +267,11 @@ class Enemy {
         
         // Draw enemy as a horizontal line that's positioned right below the question box
         ctx.strokeStyle = this.color;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 5; // Increased from 3 to 5
         ctx.beginPath();
-        // Use the question box bottom position for the line, but make it 1/6 the width
+        // Use the question box bottom position for the line, but make it 1/5 the width
         const lineY = questionBoxInfo.y + questionBoxInfo.height;
-        const lineWidth = questionBoxInfo.width / 6; // 宽度减少到六分之一
+        const lineWidth = questionBoxInfo.width / 5; // Width reduced to 1/5 instead of 1/6 (slightly wider)
         const lineStartX = questionBoxInfo.x + (questionBoxInfo.width - lineWidth) / 2; // 居中显示
         ctx.moveTo(lineStartX, lineY);
         ctx.lineTo(lineStartX + lineWidth, lineY);
@@ -276,9 +280,9 @@ class Enemy {
         // 更新命中判定区域
         this.hitbox = {
             x: lineStartX,
-            y: lineY - 10, // 判定区域向上延伸一点，更容易命中
+            y: lineY - 15, // Increased from 10 to 15 (extends upward more)
             width: lineWidth,
-            height: 20 // 判定区域高度加大，更容易命中
+            height: 30 // Increased from 20 to 30 (larger hit area)
         };
         
         // 绘制判定区域（调试用，正式版可以注释掉）
@@ -296,8 +300,8 @@ class Enemy {
     
     drawHoveringQuestion() {
         const question = this.question;
-        const questionWidth = 350;
-        const lineHeight = 15;
+        const questionWidth = 450; // Increased from 350 to 450
+        const lineHeight = 24; // Increased from 18 to 24
         
         // Calculate how many lines the question will take
         const words = question.question.split(' ');
@@ -305,7 +309,7 @@ class Enemy {
         let currentLine = '';
         
         // Measure text width (initialize canvas text properties first)
-        ctx.font = '14px Arial';
+        ctx.font = 'bold 18px Arial, sans-serif'; // Increased from 15px to 18px
         ctx.textAlign = 'left';
         
         words.forEach(word => {
@@ -320,7 +324,7 @@ class Enemy {
         lines.push(currentLine);
         
         // 使用固定高度，不再动态计算
-        const fixedHeight = 150; // 固定高度为150像素
+        const fixedHeight = 180; // Increased from 150 to 180
         const boxHeight = fixedHeight;
         
         // Position the question box above the enemy
@@ -354,7 +358,7 @@ class Enemy {
         ctx.shadowColor = 'black';
         ctx.shadowBlur = 4; // 增加阴影模糊度，提高文字清晰度
         ctx.fillStyle = textColor;
-        ctx.font = '14px Arial';
+        ctx.font = 'bold 18px Arial, sans-serif'; // Increased from 15px to 18px
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
         
@@ -376,9 +380,14 @@ class Enemy {
             
             // 显示是否为多选题
             if (question.type === 'multiSelect') {
-                ctx.font = '12px Arial';
+                ctx.font = 'bold 16px Arial, sans-serif'; // Increased from 13px to 16px
                 ctx.fillStyle = textColor;
                 ctx.fillText('(多选)', boxX + 15, optionsY - 15);
+                
+                // Add extra instruction for multi-select questions
+                ctx.fillStyle = '#ff9800'; // Orange color for emphasis
+                ctx.font = 'bold 16px Arial, sans-serif';
+                ctx.fillText('选择答案后请按空格键提交', boxX + 100, optionsY - 15);
             }
             
             // 最多显示4个选项
@@ -391,12 +400,12 @@ class Enemy {
                               this.selectedAnswers.includes(optionLetters[index]) 
                               ? '✓ ' : '';
                 
-                ctx.font = '13px Arial';
+                ctx.font = 'bold 17px Arial, sans-serif'; // Increased from 14px to 17px
                 ctx.fillText(`${prefix}${optionLetters[index]}: ${option}`, boxX + 15, optionsY + (index * lineHeight));
             });
         } else {
             // Show it's a True/False question
-            ctx.font = '12px Arial';
+            ctx.font = 'bold 16px Arial, sans-serif'; // Increased from 13px to 16px
             ctx.fillStyle = textColor;
             ctx.fillText('(True/False)', boxX + 15, boxY + Math.min(lines.length, maxDisplayLines + 1) * lineHeight + 25);
         }
@@ -414,7 +423,10 @@ class Enemy {
     }
 
     isOffScreen() {
-        return this.y > GAME_HEIGHT;
+        // Check if the enemy has fully moved below the bottom of the canvas
+        // Include the question box in the calculation
+        const questionBoxHeight = 180; // Same as fixedHeight in drawHoveringQuestion
+        return this.y - questionBoxHeight > GAME_HEIGHT;
     }
 
     addShield() {
@@ -574,9 +586,55 @@ class Firework {
 // Game initialization
 function initGame() {
     canvas = document.getElementById('game-canvas');
-    canvas.width = GAME_WIDTH;
-    canvas.height = GAME_HEIGHT;
+    
+    // Get the actual container size first
+    const gameArea = document.querySelector('.game-area');
+    canvas.width = gameArea.clientWidth;
+    canvas.height = gameArea.clientHeight;
+    
+    // Update game constants to match canvas size
+    GAME_WIDTH = canvas.width;
+    GAME_HEIGHT = canvas.height;
+    
     ctx = canvas.getContext('2d');
+    
+    // Enable high-quality text rendering
+    ctx.imageSmoothingEnabled = true;
+    ctx.textRendering = 'optimizeLegibility';
+    
+    // Calculate appropriate size based on container
+    function resizeCanvas() {
+        const gameArea = document.querySelector('.game-area');
+        
+        // Make canvas fill the entire game area
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        
+        // Update the internal canvas dimensions to match its display size
+        const displayWidth = canvas.clientWidth;
+        const displayHeight = canvas.clientHeight;
+        
+        // Only change dimensions if they're significantly different
+        if (Math.abs(canvas.width - displayWidth) > 10 || 
+            Math.abs(canvas.height - displayHeight) > 10) {
+            
+            // Update game dimensions to match the actual display size
+            canvas.width = displayWidth;
+            canvas.height = displayHeight;
+            GAME_WIDTH = displayWidth;
+            GAME_HEIGHT = displayHeight;
+            
+            // Re-position the player when canvas size changes
+            if (player) {
+                player.x = GAME_WIDTH / 2 - player.width / 2;
+                player.y = GAME_HEIGHT - player.height - 10;
+            }
+        }
+    }
+    
+    // Initial resize and add event listener for window resizing
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
     
     // Initialize event listeners
     window.addEventListener('keydown', handleKeyDown);
@@ -793,6 +851,10 @@ function startGame() {
             comboDisplayTimer = null;
         }
         
+        // Reset question review state
+        document.querySelector('.question-area').classList.remove('game-over');
+        questionDetailContainer.classList.add('hidden');
+        
         // Reset UI displays
         if (comboDisplayElement) {
             comboDisplayElement.textContent = '0';
@@ -869,6 +931,12 @@ function gameOver() {
     // Update final score display to match the format of the in-game score
     finalScoreElement.textContent = score;
     
+    // Add game-over class to enable stat-box hover effect
+    document.querySelector('.question-area').classList.add('game-over');
+    
+    // Enable question review by making question blocks clickable
+    enableQuestionReview();
+    
     gameOverScreen.classList.remove('hidden');
 }
 
@@ -934,6 +1002,9 @@ function gameUpdate() {
         }
     }
     
+    // Debugging: Log initial enemy count
+    console.log(`Start of update: ${enemies.length} enemies`);
+    
     // Update enemies
     const remainingEnemies = [];
     
@@ -948,6 +1019,8 @@ function gameUpdate() {
             
             if (bullet.collidesWith(enemy)) {
                 // Collision detected
+                console.log(`Bullet collision with type: ${bullet.type}`);
+                
                 if (enemy.checkCorrectHit(bullet.type) && enemy.shields < enemy.maxShields) {
                     // Correct answer and enemy is not fully shielded
                     score += 100 * (enemy.shields + 1); // More points for shielded enemies
@@ -968,6 +1041,7 @@ function gameUpdate() {
                     
                     // Mark this enemy as destroyed
                     enemyDestroyed = true;
+                    console.log('Enemy destroyed by correct hit!');
                     
                     break; // Exit the bullet loop since enemy is destroyed
                 } else {
@@ -979,6 +1053,7 @@ function gameUpdate() {
                     // 对于多选题的选项选择，不视为错误，只移除子弹
                     if (isMultiSelectOption) {
                         bullets.splice(i, 1);
+                        console.log(`Multi-select option ${bullet.type} toggled`);
                     }
                     // 对于错误答案或SUBMIT判定错误的情况
                     else {
@@ -991,6 +1066,7 @@ function gameUpdate() {
                                 // 简单难度下，每次答错给敌人增加一个护盾
                                 enemy.addShield();
                             }
+                            console.log(`Wrong hit! Enemy shields now: ${enemy.shields}`);
                         }
                         bullets.splice(i, 1);
                         
@@ -1014,11 +1090,13 @@ function gameUpdate() {
         
         // Skip this enemy if it was destroyed
         if (enemyDestroyed) {
+            console.log('Enemy was destroyed, not adding to remainingEnemies');
             continue;
         }
         
         // Check if enemy passed the bottom
         if (enemy.isOffScreen()) {
+            console.log('Enemy went off screen!');
             if (!isInvincible) {
                 health--;
                 updateHealth();
@@ -1040,6 +1118,7 @@ function gameUpdate() {
         remainingEnemies.push(enemy);
     }
     
+    console.log(`End of update: ${remainingEnemies.length} enemies remain`);
     enemies = remainingEnemies;
     
     // Draw invincibility indicator if active
@@ -1057,22 +1136,27 @@ function gameUpdate() {
 function spawnEnemy() {
     if (!gameActive || gamePaused) return;
     
+    console.log(`SpawnEnemy called. CurrentQuestionIndex: ${currentQuestionIndex}, Questions total: ${currentQuestions.length}, Enemies on screen: ${enemies.length}`);
+    
     // 如果屏幕上已经有敌人，不再生成新敌人
     if (enemies.length > 0) {
         // 每秒检查一次屏幕上是否有敌人
+        console.log('Enemies still on screen, delaying spawn');
         setTimeout(spawnEnemy, 1000);
         return;
     }
     
-    // 检查是否还有未回答的题目
+    // 检查是否还有未放出的题目
     if (currentQuestionIndex < currentQuestions.length) {
         // 按顺序取下一道题
         const questionIndex = currentQuestionIndex;
+        console.log(`Spawning new enemy with question ${questionIndex + 1}`);
         enemies.push(new Enemy(questionIndex));
         currentQuestionIndex++; // 递增题目索引
     } else {
         // 所有题目都已放出，检查是否还有未回答的题目
         const unansweredExists = questionStats.some(status => status === 'unanswered');
+        console.log(`All questions have been spawned. Any unanswered questions? ${unansweredExists}`);
         
         if (!unansweredExists) {
             // 所有题目已回答，游戏胜利
@@ -1136,8 +1220,8 @@ function renderQuestionStats() {
         statBox.className = `stat-box ${status}`;
         statBox.textContent = index + 1;
         
-        // Add tooltip showing the question text
-        statBox.title = currentQuestions[index].question;
+        // Add tooltip showing question number
+        statBox.title = `点击查看题目 #${index + 1} 详情`;
         
         statsGrid.appendChild(statBox);
     });
@@ -1536,4 +1620,133 @@ window.addEventListener('load', function() {
 });
 
 // Initialize the game when the page loads
-window.addEventListener('load', initGame); 
+window.addEventListener('load', initGame);
+
+// Enable question review functionality after game over
+function enableQuestionReview() {
+    // Hide the question detail container initially
+    questionDetailContainer.classList.add('hidden');
+    
+    // Add click event listeners to all stat boxes
+    const statBoxes = document.querySelectorAll('.stat-box');
+    statBoxes.forEach((box, index) => {
+        box.addEventListener('click', () => {
+            // Only allow interaction after game over
+            if (!gameActive) {
+                showQuestionDetail(index);
+            }
+        });
+    });
+}
+
+// Display question details when a stat box is clicked
+function showQuestionDetail(questionIndex) {
+    // Get the question
+    const question = currentQuestions[questionIndex];
+    if (!question) return;
+    
+    // Create HTML for the question detail
+    let html = `<div class="question-text">${questionIndex + 1}. ${question.question}</div>`;
+    
+    // Add options if it's a multiple choice question
+    if (question.options) {
+        html += '<div class="question-options">';
+        
+        // Determine if it's a multi-select question
+        const isMultiSelect = question.type === 'multiSelect';
+        
+        if (isMultiSelect) {
+            // For multi-select questions
+            const correctAnswers = question.correctAnswers;
+            
+            question.options.forEach((option, idx) => {
+                const letter = ['A', 'B', 'C', 'D'][idx];
+                const isCorrect = correctAnswers.includes(letter);
+                
+                const optionClass = isCorrect ? 'option-correct' : 'option-incorrect';
+                
+                html += `
+                    <div class="question-option ${optionClass}">
+                        <div class="option-letter">${letter}.</div>
+                        <div class="option-text">${option}</div>
+                    </div>
+                `;
+            });
+            
+            // Add the correct answers
+            html += `
+                <div class="question-answer answer-correct">
+                    正确答案: ${correctAnswers.join(', ')}
+                </div>
+            `;
+        } else {
+            // For single-choice questions
+            const correctAnswer = question.correctAnswer;
+            
+            question.options.forEach((option, idx) => {
+                const letter = ['A', 'B', 'C', 'D'][idx];
+                const isCorrect = letter === correctAnswer;
+                
+                const optionClass = isCorrect ? 'option-correct' : '';
+                
+                html += `
+                    <div class="question-option ${optionClass}">
+                        <div class="option-letter">${letter}.</div>
+                        <div class="option-text">${option}</div>
+                    </div>
+                `;
+            });
+            
+            // Add the correct answer
+            html += `
+                <div class="question-answer answer-correct">
+                    正确答案: ${correctAnswer}
+                </div>
+            `;
+        }
+        
+        html += '</div>';
+    } else {
+        // True/False question
+        const correctAnswer = question.correctAnswer === 'TRUE' ? '是' : '否';
+        
+        html += `
+            <div class="question-options">
+                <div class="question-option ${question.correctAnswer === 'TRUE' ? 'option-correct' : ''}">
+                    <div class="option-letter">✓</div>
+                    <div class="option-text">是</div>
+                </div>
+                <div class="question-option ${question.correctAnswer === 'FALSE' ? 'option-correct' : ''}">
+                    <div class="option-letter">✗</div>
+                    <div class="option-text">否</div>
+                </div>
+            </div>
+            <div class="question-answer answer-correct">
+                正确答案: ${correctAnswer}
+            </div>
+        `;
+    }
+    
+    // Add user's answer status
+    const userAnswerStatus = questionStats[questionIndex];
+    let userAnswerHtml = '';
+    
+    if (userAnswerStatus === 'correct') {
+        userAnswerHtml = '<div class="question-answer answer-correct">您的回答: 正确</div>';
+    } else if (userAnswerStatus === 'wrong') {
+        userAnswerHtml = '<div class="question-answer answer-incorrect">您的回答: 错误</div>';
+    } else {
+        userAnswerHtml = '<div class="question-answer">您未回答此题</div>';
+    }
+    
+    html += userAnswerHtml;
+    
+    // Update the container and show it
+    questionDetailContent.innerHTML = html;
+    questionDetailContainer.classList.remove('hidden');
+}
+
+// Add event handler for the close button
+closeDetailBtn.addEventListener('click', () => {
+    questionDetailContainer.classList.add('hidden');
+}); 
