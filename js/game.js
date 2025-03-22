@@ -126,180 +126,116 @@ class Player {
         // 保存当前绘图状态
         ctx.save();
         
-        // 缩小飞机整体尺寸
-        const scaleX = 0.85; // 水平缩小15%
-        const scaleY = 0.85; // 垂直缩小15%
+        // 获取当前时间用于脉动效果
+        const pulseTime = Date.now() / 1000;
+        const pulseAmount = Math.sin(pulseTime * 3) * 0.05 + 1; // 缓慢脉动效果
+        const glowPulse = Math.sin(pulseTime * 5) * 0.3 + 0.7; // 发光脉动
         
-        // 计算缩放后的中心点，保持飞机位置稳定
+        // 计算中心点
         const centerX = this.x + this.width / 2;
         const centerY = this.y + this.height / 2;
         
-        // 脉动效果 - 随时间变化的值
-        const pulseAmount = Math.sin(Date.now() / 200) * 0.05 + 1;
+        // 大脑外部轮廓 - 脉动圆形
+        const baseRadius = Math.min(this.width, this.height) / 2.2;
+        const outerRadius = baseRadius * pulseAmount;
         
-        // 应用变换：先平移到中心点，然后缩放，再平移回原位置
-        ctx.translate(centerX, centerY);
-        ctx.scale(scaleX, scaleY);
-        ctx.translate(-centerX, -centerY);
-        
-        // 增强发光效果 - 主体外发光
-        ctx.shadowColor = '#00ffcc';
-        ctx.shadowBlur = 20;
-        
-        // 飞机主体 - 三角形基础形状
-        ctx.fillStyle = '#1a0a3a'; // 深蓝紫色主体
-        ctx.beginPath();
-        ctx.moveTo(this.x + this.width / 2, this.y + 5); // 飞机头部尖端
-        ctx.lineTo(this.x + this.width - 15, this.y + this.height - 10); // 右下角
-        ctx.lineTo(this.x + 15, this.y + this.height - 10); // 左下角
-        ctx.closePath();
-        ctx.fill();
-        
-        // 添加飞机表面发光纹理
-        const glowGradient = ctx.createLinearGradient(
-            this.x + this.width / 2, this.y + 5,
-            this.x + this.width / 2, this.y + this.height - 10
+        // 外层发光光环
+        const outerGlow = ctx.createRadialGradient(
+            centerX, centerY, baseRadius * 0.7,
+            centerX, centerY, outerRadius * 1.2
         );
-        glowGradient.addColorStop(0, 'rgba(0, 255, 255, 0.1)');
-        glowGradient.addColorStop(0.5, 'rgba(0, 255, 255, 0.05)');
-        glowGradient.addColorStop(1, 'rgba(0, 255, 255, 0.1)');
+        outerGlow.addColorStop(0, 'rgba(0, 255, 204, 0.3)');
+        outerGlow.addColorStop(0.7, 'rgba(0, 255, 204, 0.1)');
+        outerGlow.addColorStop(1, 'rgba(0, 255, 204, 0)');
         
-        ctx.fillStyle = glowGradient;
+        ctx.fillStyle = outerGlow;
         ctx.beginPath();
-        ctx.moveTo(this.x + this.width / 2, this.y + 5);
-        ctx.lineTo(this.x + this.width - 15, this.y + this.height - 10);
-        ctx.lineTo(this.x + 15, this.y + this.height - 10);
-        ctx.closePath();
+        ctx.arc(centerX, centerY, outerRadius * 1.2, 0, Math.PI * 2);
         ctx.fill();
         
-        // 机翼 - 左侧
-        ctx.fillStyle = '#3a1466'; // 更亮的紫色机翼
+        // 主体大脑
+        const mainGradient = ctx.createRadialGradient(
+            centerX, centerY, 0,
+            centerX, centerY, outerRadius
+        );
+        mainGradient.addColorStop(0, '#004455');
+        mainGradient.addColorStop(0.7, '#002233');
+        mainGradient.addColorStop(1, '#001122');
+        
+        ctx.fillStyle = mainGradient;
         ctx.beginPath();
-        ctx.moveTo(this.x + this.width / 2 - 5, this.y + 30); // 连接点
-        ctx.lineTo(this.x - 5, this.y + this.height - 30); // 外侧尖端
-        ctx.lineTo(this.x + 25, this.y + this.height - 25); // 内侧底部
-        ctx.lineTo(this.x + this.width / 2 - 15, this.y + 40); // 上部连接点
-        ctx.closePath();
+        ctx.arc(centerX, centerY, outerRadius, 0, Math.PI * 2);
         ctx.fill();
         
-        // 机翼 - 右侧
-        ctx.beginPath();
-        ctx.moveTo(this.x + this.width / 2 + 5, this.y + 30); // 连接点
-        ctx.lineTo(this.x + this.width + 5, this.y + this.height - 30); // 外侧尖端
-        ctx.lineTo(this.x + this.width - 25, this.y + this.height - 25); // 内侧底部
-        ctx.lineTo(this.x + this.width / 2 + 15, this.y + 40); // 上部连接点
-        ctx.closePath();
-        ctx.fill();
-        
-        // 驾驶舱/前窗 - 强化发光效果
-        ctx.shadowColor = '#00ffcc';
-        ctx.shadowBlur = 15 * pulseAmount; // 随时间脉动
-        ctx.fillStyle = '#00ffcc'; // 霓虹青色
-        ctx.globalAlpha = 0.8 * pulseAmount; // 半透明效果，随时间脉动
-        ctx.beginPath();
-        ctx.moveTo(this.x + this.width / 2, this.y + 15);
-        ctx.lineTo(this.x + this.width / 2 + 12, this.y + 35);
-        ctx.lineTo(this.x + this.width / 2 - 12, this.y + 35);
-        ctx.closePath();
-        ctx.fill();
-        ctx.globalAlpha = 1.0; // 重置透明度
-        
-        // 强化机身线条 - 双线效果
-        ctx.strokeStyle = '#00ffff';
+        // 添加神经网络纹理 - 随机圆形连接
+        ctx.strokeStyle = `rgba(0, 255, 204, ${0.4 * glowPulse})`;
         ctx.lineWidth = 1;
         
-        // 上部线条 - 左
-        ctx.beginPath();
-        ctx.moveTo(this.x + this.width / 2 - 2, this.y + 8);
-        ctx.lineTo(this.x + 20, this.y + this.height - 15);
-        ctx.stroke();
+        // 生成基于时间的随机种子，但保持一定的稳定性
+        const seed = Math.floor(pulseTime / 0.3);
+        const pseudoRandom = (base) => {
+            return Math.sin(base * seed * 123.456) * 0.5 + 0.5;
+        };
         
-        // 上部线条 - 右
-        ctx.beginPath();
-        ctx.moveTo(this.x + this.width / 2 + 2, this.y + 8);
-        ctx.lineTo(this.x + this.width - 20, this.y + this.height - 15);
-        ctx.stroke();
+        // 神经节点数量
+        const nodeCount = 6;
+        const nodes = [];
         
-        // 引擎光束 - 随时间脉动
-        const engineGlowY = this.y + this.height - 10;
+        // 生成神经节点位置
+        for (let i = 0; i < nodeCount; i++) {
+            const angle = pseudoRandom(i) * Math.PI * 2;
+            const distance = pseudoRandom(i + 0.5) * outerRadius * 0.8;
+            nodes.push({
+                x: centerX + Math.cos(angle) * distance,
+                y: centerY + Math.sin(angle) * distance,
+                radius: pseudoRandom(i + 0.2) * 3 + 2,
+                pulse: Math.sin(pulseTime * 4 + i) * 0.5 + 0.5
+            });
+        }
         
-        // 引擎内部 - 发光核心
-        ctx.shadowColor = '#ff00aa';
-        ctx.shadowBlur = 20 * pulseAmount;
+        // 绘制神经连接
+        for (let i = 0; i < nodeCount; i++) {
+            for (let j = i + 1; j < nodeCount; j++) {
+                // 只连接一部分节点
+                if (pseudoRandom(i * j) > 0.5) {
+                    const alpha = (1 - (nodes[i].pulse + nodes[j].pulse) / 2) * 0.7;
+                    ctx.strokeStyle = `rgba(0, 255, 204, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.moveTo(nodes[i].x, nodes[i].y);
+                    ctx.lineTo(nodes[j].x, nodes[j].y);
+                    ctx.stroke();
+                }
+            }
+        }
         
-        // 中央引擎 - 更亮、更动态
-        const engineGradient = ctx.createLinearGradient(
-            this.x + this.width / 2, engineGlowY,
-            this.x + this.width / 2, engineGlowY + 25 * pulseAmount
+        // 绘制神经节点
+        for (const node of nodes) {
+            ctx.fillStyle = `rgba(0, 255, 204, ${0.5 + node.pulse * 0.5})`;
+            ctx.shadowColor = '#00ffcc';
+            ctx.shadowBlur = 10 * node.pulse;
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, node.radius * (0.8 + node.pulse * 0.4), 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // 中央核心 - 强烈发光
+        ctx.shadowColor = '#00ffcc';
+        ctx.shadowBlur = 15 * glowPulse;
+        
+        // 内部发光核心
+        const coreGradient = ctx.createRadialGradient(
+            centerX, centerY, 0,
+            centerX, centerY, baseRadius * 0.5
         );
-        engineGradient.addColorStop(0, '#ffffff');
-        engineGradient.addColorStop(0.3, '#ff77bb');
-        engineGradient.addColorStop(1, '#ff00aa');
+        coreGradient.addColorStop(0, 'rgba(0, 255, 255, 0.9)');
+        coreGradient.addColorStop(0.5, 'rgba(0, 255, 204, 0.6)');
+        coreGradient.addColorStop(1, 'rgba(0, 255, 204, 0.1)');
         
-        ctx.fillStyle = engineGradient;
+        ctx.fillStyle = coreGradient;
+        ctx.globalAlpha = 0.7 + glowPulse * 0.3;
         ctx.beginPath();
-        ctx.moveTo(this.x + this.width / 2 - 8, engineGlowY);
-        ctx.lineTo(this.x + this.width / 2 + 8, engineGlowY);
-        ctx.lineTo(this.x + this.width / 2 + 12, engineGlowY + 20 * pulseAmount); // 随时间变化
-        ctx.lineTo(this.x + this.width / 2 - 12, engineGlowY + 20 * pulseAmount); // 随时间变化
-        ctx.closePath();
+        ctx.arc(centerX, centerY, baseRadius * 0.4 * (0.9 + glowPulse * 0.2), 0, Math.PI * 2);
         ctx.fill();
-        
-        // 左侧小引擎
-        const leftEngineGradient = ctx.createLinearGradient(
-            this.x + 30, engineGlowY,
-            this.x + 30, engineGlowY + 12 * pulseAmount
-        );
-        leftEngineGradient.addColorStop(0, '#ffffff');
-        leftEngineGradient.addColorStop(0.3, '#ff77bb');
-        leftEngineGradient.addColorStop(1, '#ff00aa');
-        
-        ctx.fillStyle = leftEngineGradient;
-        ctx.beginPath();
-        ctx.moveTo(this.x + 25, engineGlowY);
-        ctx.lineTo(this.x + 35, engineGlowY);
-        ctx.lineTo(this.x + 32, engineGlowY + 12 * pulseAmount); // 随时间变化
-        ctx.lineTo(this.x + 22, engineGlowY + 10 * pulseAmount); // 随时间变化
-        ctx.closePath();
-        ctx.fill();
-        
-        // 右侧小引擎
-        const rightEngineGradient = ctx.createLinearGradient(
-            this.x + this.width - 30, engineGlowY,
-            this.x + this.width - 30, engineGlowY + 12 * pulseAmount
-        );
-        rightEngineGradient.addColorStop(0, '#ffffff');
-        rightEngineGradient.addColorStop(0.3, '#ff77bb');
-        rightEngineGradient.addColorStop(1, '#ff00aa');
-        
-        ctx.fillStyle = rightEngineGradient;
-        ctx.beginPath();
-        ctx.moveTo(this.x + this.width - 25, engineGlowY);
-        ctx.lineTo(this.x + this.width - 35, engineGlowY);
-        ctx.lineTo(this.x + this.width - 32, engineGlowY + 12 * pulseAmount); // 随时间变化
-        ctx.lineTo(this.x + this.width - 22, engineGlowY + 10 * pulseAmount); // 随时间变化
-        ctx.closePath();
-        ctx.fill();
-        
-        // 额外的荧光点缀 - 随机闪烁
-        ctx.fillStyle = '#00ffff';
-        ctx.shadowColor = '#00ffff';
-        ctx.shadowBlur = 5;
-        ctx.beginPath();
-        ctx.arc(this.x + 10, this.y + this.height - 20, 1, 0, Math.PI * 2);
-        ctx.fill();
-        
-        ctx.beginPath();
-        ctx.arc(this.x + this.width - 10, this.y + this.height - 20, 1, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // 飞机尾部边缘发光
-        ctx.strokeStyle = '#00ffcc';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(this.x + 15, this.y + this.height - 10);
-        ctx.lineTo(this.x + this.width - 15, this.y + this.height - 10);
-        ctx.stroke();
         
         // 重置阴影和变换效果
         ctx.restore();
