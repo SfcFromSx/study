@@ -11,13 +11,13 @@ const BULLET_SPEED = 3;
 const ENEMY_SPEED = 0.75;
 const MAX_HEALTH = 10;
 const BULLET_TYPES = {
-    A: { key: 'a', color: '#ff5252', text: 'A' },
-    B: { key: 's', color: '#4caf50', text: 'B' },
-    C: { key: 'd', color: '#2196f3', text: 'C' },
-    D: { key: 'f', color: '#ff9800', text: 'D' },
-    TRUE: { key: 'w', color: '#4caf50', text: '✓' },
-    FALSE: { key: 'e', color: '#ff5252', text: '✗' },
-    SUBMIT: { key: ' ', color: '#9c27b0', text: '→' }
+    A: { key: 'a', color: '#ff00de', text: 'A' }, // 霓虹粉红
+    B: { key: 's', color: '#00ffcc', text: 'B' }, // 霓虹青绿
+    C: { key: 'd', color: '#00ccff', text: 'C' }, // 霓虹蓝
+    D: { key: 'f', color: '#ffcc00', text: 'D' }, // 霓虹金黄
+    TRUE: { key: 'w', color: '#00ff66', text: '✓' }, // 霓虹绿
+    FALSE: { key: 'e', color: '#ff3377', text: '✗' }, // 霓虹红
+    SUBMIT: { key: ' ', color: '#bb33ff', text: '→' } // 霓虹紫
 };
 
 // 游戏难度
@@ -117,7 +117,7 @@ class Player {
     
     drawFallbackShip() {
         // Draw ship body
-        ctx.fillStyle = '#4c4cff';
+        ctx.fillStyle = '#4400ff'; // 深蓝紫色
         ctx.beginPath();
         ctx.moveTo(this.x + this.width / 2, this.y);
         ctx.lineTo(this.x + this.width, this.y + this.height);
@@ -126,7 +126,7 @@ class Player {
         ctx.fill();
         
         // Draw ship details
-        ctx.fillStyle = '#7070ff';
+        ctx.fillStyle = '#7733ff'; // 亮紫色
         ctx.beginPath();
         ctx.moveTo(this.x + this.width / 2, this.y + 10);
         ctx.lineTo(this.x + this.width * 0.7, this.y + this.height * 0.8);
@@ -136,16 +136,24 @@ class Player {
         ctx.fill();
         
         // Draw cockpit
-        ctx.fillStyle = '#87ceeb';
+        ctx.fillStyle = '#00ffff'; // 霓虹青色
         ctx.beginPath();
         ctx.arc(this.x + this.width / 2, this.y + 15, 7, 0, Math.PI * 2);
         ctx.fill();
         
         // Draw engine glow
-        ctx.fillStyle = '#ff9955';
+        ctx.fillStyle = '#ff00ff'; // 霓虹紫红色
         ctx.beginPath();
         ctx.arc(this.x + this.width / 2, this.y + this.height - 12, 5, 0, Math.PI * 2);
         ctx.fill();
+        
+        // 添加发光效果
+        ctx.shadowColor = '#ff00ff';
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.arc(this.x + this.width / 2, this.y + this.height - 12, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
     }
 
     move(direction) {
@@ -247,13 +255,12 @@ class Enemy {
         // 记录多选题已选中的选项
         this.selectedAnswers = [];
         
-        // Determine color based on question type
+        // Determine color based on question type - 赛博朋克霓虹色调
         if (this.question.options) { // Multiple choice
-            const answerIndex = ['A', 'B', 'C', 'D'].indexOf(this.question.correctAnswer);
-            const colors = ['#ff5252', '#4caf50', '#2196f3', '#ff9800'];
+            const colors = ['#ff00de', '#00ffcc', '#00ccff', '#ffcc00']; // 霓虹色调
             this.color = colors[Math.floor(Math.random() * colors.length)];
         } else { // True/False
-            this.color = this.question.correctAnswer === 'TRUE' ? '#4caf50' : '#ff5252';
+            this.color = this.question.correctAnswer === 'TRUE' ? '#00ff66' : '#ff3377';
         }
     }
 
@@ -332,27 +339,38 @@ class Enemy {
         const boxX = Math.max(5, Math.min(GAME_WIDTH - questionWidth - 5, this.x + this.width / 2 - questionWidth / 2));
         const boxY = Math.max(5, this.y - boxHeight - 10);
         
-        // 半透明背景
-        ctx.fillStyle = 'rgba(33, 33, 33, 0.1)'; // 更改背景色和透明度
+        // 半透明背景 - 赛博朋克风格
+        ctx.fillStyle = 'rgba(10, 5, 40, 0.75)'; // 深蓝紫色半透明背景
         ctx.fillRect(boxX, boxY, questionWidth, boxHeight);
+        
+        // 添加霓虹边框
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(boxX, boxY, questionWidth, boxHeight);
+        
+        // 添加内发光效果
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 6;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
         
         // 根据保护套数量改变文字颜色
         let textColor;
         switch(this.shields) {
             case 0:
-                textColor = 'white'; // 默认白色
+                textColor = '#ffffff'; // 白色
                 break;
             case 1:
-                textColor = '#ffff00'; // 黄色
+                textColor = '#ffff33'; // 明亮的黄色
                 break;
             case 2:
-                textColor = '#ffa500'; // 橙色
+                textColor = '#ff9900'; // 明亮的橙色
                 break;
             case 3:
-                textColor = '#ff0000'; // 红色（无敌）
+                textColor = '#ff3366'; // 明亮的红色（无敌）
                 break;
             default:
-                textColor = 'white';
+                textColor = '#ffffff';
         }
         
         // Draw text with shadow for better visibility
@@ -411,7 +429,7 @@ class Enemy {
             ctx.fillText('(True/False)', boxX + 15, boxY + Math.min(lines.length, maxDisplayLines + 1) * lineHeight + 25);
         }
         
-        // Reset shadow
+        // Reset shadow after text rendering
         ctx.shadowBlur = 0;
         
         // Return the question box position and dimensions for the enemy line
@@ -515,10 +533,11 @@ class Firework {
     }
     
     getRandomColor() {
-        // Enhanced colors with brighter options for major milestones
+        // 赛博朋克风格霓虹色
         const colors = [
-            '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff',
-            '#ff5500', '#ff0055', '#55ff00', '#00ff55', '#5500ff', '#5555ff'
+            '#ff00de', '#00ffcc', '#00ccff', '#ffcc00', 
+            '#ff3377', '#00ff66', '#bb33ff', '#33ddff',
+            '#ff0066', '#00ffff', '#ffcc33', '#cc00ff'
         ];
         return colors[Math.floor(Math.random() * colors.length)];
     }
@@ -979,13 +998,19 @@ function gameUpdate() {
         // 添加一点半透明暗色叠加，使游戏元素更显眼
         ctx.drawImage(backgroundImage, offsetX, offsetY, drawWidth, drawHeight);
         
-        // 添加轻微的暗色叠加，增强游戏元素可见度
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        // 添加更强的暗色叠加效果，使霓虹色更突出
+        ctx.fillStyle = 'rgba(5, 0, 20, 0.45)'; // 深紫色半透明叠加
         ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        
+        // 添加赛博朋克视觉效果 - 网格线
+        drawCyberpunkGrid();
     } else {
         // 如果图片未加载完成，使用纯色背景作为备选
-        ctx.fillStyle = '#121240';
+        ctx.fillStyle = '#0a0030'; // 深紫蓝色背景
         ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+        
+        // 绘制网格线作为背景
+        drawCyberpunkGrid();
     }
     
     if (!gameActive) return;
@@ -995,16 +1020,27 @@ function gameUpdate() {
         bullets.forEach(bullet => bullet.draw());
         enemies.forEach(enemy => enemy.draw());
         
-        // Draw pause message
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        // Draw pause message with cyberpunk style
+        ctx.fillStyle = 'rgba(5, 0, 20, 0.7)';
         ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-        ctx.fillStyle = 'white';
-        ctx.font = '24px Arial';
+        
+        // 暂停文字
+        ctx.fillStyle = '#00ffff'; // 霓虹青色
+        ctx.font = 'bold 28px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
+        
+        // 添加发光效果
+        ctx.shadowColor = '#00ffff';
+        ctx.shadowBlur = 15;
         ctx.fillText('PAUSED', GAME_WIDTH / 2, GAME_HEIGHT / 2);
-        ctx.font = '16px Arial';
-        ctx.fillText('Press P to resume', GAME_WIDTH / 2, GAME_HEIGHT / 2 + 30);
+        
+        ctx.font = '18px Arial';
+        ctx.fillStyle = '#ff00de'; // 霓虹粉
+        ctx.fillText('Press P to resume', GAME_WIDTH / 2, GAME_HEIGHT / 2 + 40);
+        
+        // 重置阴影
+        ctx.shadowBlur = 0;
         return;
     }
     
@@ -1165,12 +1201,26 @@ function gameUpdate() {
     
     // Draw invincibility indicator if active
     if (isInvincible) {
+        // 更科幻的无敌效果
         ctx.strokeStyle = 'rgba(255, 215, 0, 0.7)';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
+        
+        // 添加脉动效果
+        const pulseSize = 1.0 + 0.1 * Math.sin(Date.now() / 100);
+        
         ctx.beginPath();
         ctx.arc(player.x + player.width / 2, player.y + player.height / 2, 
-                player.width, 0, Math.PI * 2);
+                player.width * pulseSize, 0, Math.PI * 2);
         ctx.stroke();
+        
+        // 添加辉光效果
+        ctx.shadowColor = '#ffcc00';
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.arc(player.x + player.width / 2, player.y + player.height / 2, 
+                player.width * pulseSize, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
     }
 }
 
@@ -1240,6 +1290,24 @@ function updateHealth() {
         // 如果当前生命值小于等于i，则这个段是空的
         if (health <= i) {
             segment.classList.add('empty');
+        } else {
+            // 添加赛博朋克风格的发光效果
+            segment.style.boxShadow = '0 0 8px #00ffcc';
+        }
+        
+        // 自定义颜色
+        if (health <= i) {
+            segment.style.backgroundColor = 'rgba(20, 0, 40, 0.3)'; // 暗紫色底
+            segment.style.borderColor = '#33007a'; // 深紫色边框
+        } else if (health <= 3) { // 生命危急
+            segment.style.backgroundColor = '#ff3366'; // 霓虹红
+            segment.style.borderColor = '#ff0066'; // 霓虹深红
+        } else if (health <= 6) { // 生命适中
+            segment.style.backgroundColor = '#ffcc00'; // 霓虹黄
+            segment.style.borderColor = '#ff9900'; // 霓虹橙
+        } else { // 生命充足
+            segment.style.backgroundColor = '#00ffcc'; // 霓虹青
+            segment.style.borderColor = '#00ccaa'; // 深霓虹青
         }
         
         healthBarElement.appendChild(segment);
@@ -1252,6 +1320,8 @@ function renderQuestionStats() {
     
     const statHeader = document.createElement('h3');
     statHeader.textContent = '题目统计';
+    statHeader.style.color = '#00ffff'; // 霓虹青色标题
+    statHeader.style.textShadow = '0 0 5px #00ffff'; // 添加发光效果
     statsContainerElement.appendChild(statHeader);
     
     const statsGrid = document.createElement('div');
@@ -1265,6 +1335,27 @@ function renderQuestionStats() {
         // Add tooltip showing question number
         statBox.title = `点击查看题目 #${index + 1} 详情`;
         
+        // 赛博朋克风格颜色
+        switch(status) {
+            case 'correct':
+                statBox.style.backgroundColor = '#00ff66'; // 霓虹绿
+                statBox.style.borderColor = '#00cc33'; // 深霓虹绿
+                statBox.style.color = '#000000';
+                statBox.style.boxShadow = '0 0 8px #00ff66'; // 发光效果
+                break;
+            case 'wrong':
+                statBox.style.backgroundColor = '#ff3366'; // 霓虹红
+                statBox.style.borderColor = '#cc0033'; // 深霓虹红
+                statBox.style.color = '#000000';
+                statBox.style.boxShadow = '0 0 8px #ff3366'; // 发光效果
+                break;
+            case 'unanswered':
+                statBox.style.backgroundColor = 'rgba(20, 0, 40, 0.5)'; // 半透明深紫
+                statBox.style.borderColor = '#bb33ff'; // 霓虹紫边框
+                statBox.style.color = '#bb33ff';
+                break;
+        }
+        
         statsGrid.appendChild(statBox);
     });
     
@@ -1274,9 +1365,9 @@ function renderQuestionStats() {
     statLegend.className = 'stat-legend';
     
     const legendItems = [
-        { class: 'unanswered', label: '未回答' },
-        { class: 'correct', label: '正确' },
-        { class: 'wrong', label: '错误' }
+        { class: 'unanswered', label: '未回答', color: '#bb33ff' }, // 霓虹紫
+        { class: 'correct', label: '正确', color: '#00ff66' }, // 霓虹绿
+        { class: 'wrong', label: '错误', color: '#ff3366' } // 霓虹红
     ];
     
     legendItems.forEach(item => {
@@ -1285,9 +1376,12 @@ function renderQuestionStats() {
         
         const legendColor = document.createElement('span');
         legendColor.className = `legend-color ${item.class}`;
+        legendColor.style.backgroundColor = item.color;
+        legendColor.style.boxShadow = `0 0 5px ${item.color}`; // 发光效果
         
         const legendLabel = document.createElement('span');
         legendLabel.textContent = item.label;
+        legendLabel.style.color = item.color; // 匹配颜色
         
         legendItem.appendChild(legendColor);
         legendItem.appendChild(legendLabel);
@@ -1304,9 +1398,9 @@ function renderQuestionStats() {
     const statsCounter = document.createElement('div');
     statsCounter.className = 'stats-counter';
     statsCounter.innerHTML = `
-        <div>正确: ${correctCount}</div>
-        <div>错误: ${wrongCount}</div>
-        <div>未回答: ${unansweredCount}</div>
+        <div style="color: #00ff66; text-shadow: 0 0 3px #00ff66;">正确: ${correctCount}</div>
+        <div style="color: #ff3366; text-shadow: 0 0 3px #ff3366;">错误: ${wrongCount}</div>
+        <div style="color: #bb33ff; text-shadow: 0 0 3px #bb33ff;">未回答: ${unansweredCount}</div>
     `;
     
     statsContainerElement.appendChild(statsCounter);
@@ -1542,14 +1636,14 @@ function drawComboCount() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
-    // Text shadow for better visibility
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetX = 3;
-    ctx.shadowOffsetY = 3;
+    // Text shadow for better visibility - 增强霓虹效果
+    ctx.shadowColor = 'rgba(0, 255, 100, 0.9)';
+    ctx.shadowBlur = 20;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
     
-    // Use consistent green color for all combo counts
-    const comboColor = '#4caf50'; // Match the color used for correct answers
+    // 使用霓虹绿色作为基础连击颜色
+    const comboColor = '#00ff66'; // 霓虹绿
     
     // Add pulsing effect for high combos (only at milestones)
     let scale = 1.0;
@@ -1575,8 +1669,8 @@ function drawComboCount() {
 function updateComboDisplayColor() {
     if (!comboDisplayElement) return;
     
-    // Use consistent green color (same as correct answers) for all combo counts
-    const greenColor = '#4caf50'; // Match the color used for correct answers
+    // 使用霓虹绿色
+    const greenColor = '#00ff66'; // 霓虹绿
     
     // Apply the color
     comboDisplayElement.style.color = greenColor;
@@ -1584,12 +1678,12 @@ function updateComboDisplayColor() {
     // Add animation effect ONLY for exact milestone combos
     if (comboCount === 5 || comboCount === 10 || comboCount === 20) {
         comboDisplayElement.style.fontSize = '36px'; // Temporarily make it larger
-        comboDisplayElement.style.textShadow = `0 0 10px ${greenColor}`; // Stronger glow
+        comboDisplayElement.style.textShadow = `0 0 15px ${greenColor}, 0 0 25px ${greenColor}`; // 增强辉光效果
         
         // Reset after animation
         setTimeout(() => {
             comboDisplayElement.style.fontSize = '32px'; // Back to normal size
-            comboDisplayElement.style.textShadow = `0 0 5px ${greenColor}`; // Normal glow
+            comboDisplayElement.style.textShadow = `0 0 10px ${greenColor}`; // Normal glow
         }, 500);
     }
 }
@@ -1791,4 +1885,29 @@ function showQuestionDetail(questionIndex) {
 // Add event handler for the close button
 closeDetailBtn.addEventListener('click', () => {
     questionDetailContainer.classList.add('hidden');
-}); 
+});
+
+// 绘制赛博朋克网格背景
+function drawCyberpunkGrid() {
+    // 网格线颜色
+    ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)'; // 青色半透明
+    ctx.lineWidth = 1;
+    
+    // 水平线
+    const gridSpacingY = 50;
+    for (let y = 0; y < GAME_HEIGHT; y += gridSpacingY) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(GAME_WIDTH, y);
+        ctx.stroke();
+    }
+    
+    // 垂直线
+    const gridSpacingX = 50;
+    for (let x = 0; x < GAME_WIDTH; x += gridSpacingX) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, GAME_HEIGHT);
+        ctx.stroke();
+    }
+} 
