@@ -336,7 +336,7 @@ class Enemy {
         let currentLine = '';
         
         // Measure text width (initialize canvas text properties first)
-        ctx.font = 'bold 18px Arial, sans-serif'; // Increased from 15px to 18px
+        ctx.font = 'bold 18px "Orbitron", "Rajdhani", "Blender Pro", Arial, sans-serif'; // 更科幻的字体
         ctx.textAlign = 'left';
         
         words.forEach(word => {
@@ -362,12 +362,7 @@ class Enemy {
         ctx.fillStyle = 'rgba(10, 5, 40, 0.4)'; // 由0.75改为0.4，增加透明度
         ctx.fillRect(boxX, boxY, questionWidth, boxHeight);
         
-        // 移除边框代码
-        // ctx.strokeStyle = this.color;
-        // ctx.lineWidth = 2;
-        // ctx.strokeRect(boxX, boxY, questionWidth, boxHeight);
-        
-        // 保留发光效果
+        // 添加内发光效果 - 保留发光但不要边框
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 8; // 稍微增强发光效果
         ctx.shadowOffsetX = 0;
@@ -392,60 +387,181 @@ class Enemy {
                 textColor = '#ffffff';
         }
         
-        // Draw text with shadow for better visibility
+        // 添加题目标题的赛博朋克风格
+        ctx.save();
+        
+        // 绘制题目标题背景条
+        const titleHeight = 30;
+        const titleGradient = ctx.createLinearGradient(boxX, boxY, boxX + questionWidth, boxY);
+        titleGradient.addColorStop(0, 'rgba(0, 0, 0, 0.8)');
+        titleGradient.addColorStop(0.5, 'rgba(20, 10, 60, 0.8)');
+        titleGradient.addColorStop(1, 'rgba(0, 0, 0, 0.8)');
+        
+        ctx.fillStyle = titleGradient;
+        ctx.fillRect(boxX, boxY, questionWidth, titleHeight);
+        
+        // 绘制标题文字
+        ctx.font = 'bold 18px "Orbitron", "Rajdhani", "Blender Pro", Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 10;
+        ctx.fillText(`QUESTION #${this.questionIndex + 1}`, boxX + questionWidth/2, boxY + 20);
+        
+        // 重置为问题文本样式
+        ctx.textAlign = 'left';
+        ctx.restore();
+        
+        // 绘制题目文本
         ctx.shadowColor = 'black';
         ctx.shadowBlur = 4; // 增加阴影模糊度，提高文字清晰度
         ctx.fillStyle = textColor;
-        ctx.font = 'bold 18px Arial, sans-serif'; // Increased from 15px to 18px
-        ctx.textAlign = 'left';
+        ctx.font = 'bold 18px "Orbitron", "Rajdhani", "Blender Pro", Arial, sans-serif'; // 使用更科幻的字体
         ctx.textBaseline = 'top';
         
-        // Draw the question
+        // 添加赛博朋克风格扫描线效果
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(boxX, boxY + titleHeight, questionWidth, boxHeight - titleHeight);
+        ctx.clip();
+        
+        // 绘制水平扫描线
+        const scanLineOpacity = 0.15;
+        const scanLineSpacing = 4;
+        const scanLineGlow = 2;
+        
+        ctx.shadowColor = 'rgba(0, 255, 255, 0.3)';
+        ctx.shadowBlur = scanLineGlow;
+        ctx.fillStyle = `rgba(0, 255, 255, ${scanLineOpacity})`;
+        
+        for (let y = boxY + titleHeight; y < boxY + boxHeight; y += scanLineSpacing) {
+            ctx.fillRect(boxX, y, questionWidth, 1);
+        }
+        
+        ctx.restore();
+        
+        // Draw the question - with a slight offset for the title
+        const textStartY = boxY + titleHeight + 10;
         const maxDisplayLines = 4; // 最多显示4行问题文本
         lines.slice(0, maxDisplayLines).forEach((line, index) => {
-            ctx.fillText(line, boxX + 15, boxY + 15 + (index * lineHeight));
+            // 创建文字发光效果
+            ctx.save();
+            ctx.shadowColor = this.color;
+            ctx.shadowBlur = 3;
+            ctx.fillStyle = textColor;
+            ctx.fillText(line, boxX + 15, textStartY + (index * lineHeight));
+            ctx.restore();
         });
         
         // 如果问题文本超过4行，显示省略号
         if (lines.length > maxDisplayLines) {
-            ctx.fillText('...', boxX + 15, boxY + 15 + (maxDisplayLines * lineHeight));
+            ctx.fillText('...', boxX + 15, textStartY + (maxDisplayLines * lineHeight));
         }
         
         // Draw options for multiple choice
         if (question.options) {
-            const optionsY = boxY + Math.min(lines.length, maxDisplayLines + 1) * lineHeight + 25;
+            const optionsY = textStartY + Math.min(lines.length, maxDisplayLines + 1) * lineHeight + 10;
             const optionLetters = ['A', 'B', 'C', 'D'];
             
             // 显示是否为多选题
             if (question.type === 'multiSelect') {
-                ctx.font = 'bold 16px Arial, sans-serif'; // Increased from 13px to 16px
-                ctx.fillStyle = textColor;
-                ctx.fillText('(多选)', boxX + 15, optionsY - 15);
+                ctx.font = 'bold 16px "Orbitron", "Rajdhani", Arial, sans-serif';
+                ctx.fillStyle = '#00ffcc'; // 霓虹青绿
+                ctx.fillText('[多选题]', boxX + 15, optionsY - 18);
                 
                 // Add extra instruction for multi-select questions
-                ctx.fillStyle = '#ff9800'; // Orange color for emphasis
-                ctx.font = 'bold 16px Arial, sans-serif';
-                ctx.fillText('选择答案后请按空格键提交', boxX + 100, optionsY - 15);
+                ctx.fillStyle = '#ffcc00'; // 霓虹金黄
+                ctx.font = 'bold 16px "Orbitron", "Rajdhani", Arial, sans-serif';
+                ctx.fillText('[空格键提交]', boxX + 100, optionsY - 18);
             }
+            
+            // 创建选项背景和边框
+            ctx.save();
+            ctx.strokeStyle = 'rgba(100, 220, 255, 0.3)';
+            ctx.lineWidth = 1;
             
             // 最多显示4个选项
             const maxOptions = 4;
             question.options.slice(0, maxOptions).forEach((option, index) => {
-                ctx.fillStyle = textColor; // 选项也使用相同颜色
+                const optionY = optionsY + (index * lineHeight);
                 
-                // 对于多选题，已选中的选项前面添加勾选标记
-                const prefix = question.type === 'multiSelect' && 
-                              this.selectedAnswers.includes(optionLetters[index]) 
-                              ? '✓ ' : '';
+                // 选项字母样式
+                ctx.save();
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 8;
+                ctx.font = 'bold 17px "Orbitron", "Rajdhani", Arial, sans-serif';
+                ctx.fillStyle = BULLET_TYPES[optionLetters[index]].color; // 使用与子弹相同的颜色
                 
-                ctx.font = 'bold 17px Arial, sans-serif'; // Increased from 14px to 17px
-                ctx.fillText(`${prefix}${optionLetters[index]}: ${option}`, boxX + 15, optionsY + (index * lineHeight));
+                // 绘制选项字母边框
+                const letterX = boxX + 15;
+                const letterCircleSize = 16;
+                ctx.beginPath();
+                ctx.arc(letterX, optionY + 8, letterCircleSize/2, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // 绘制选项字母
+                ctx.textAlign = 'center';
+                ctx.fillText(optionLetters[index], letterX, optionY + 8);
+                ctx.textAlign = 'left';
+                ctx.restore();
+                
+                // 对于多选题，已选中的选项前面添加特殊标记
+                const isSelected = question.type === 'multiSelect' && 
+                                this.selectedAnswers.includes(optionLetters[index]);
+                
+                // 选项文本样式
+                ctx.fillStyle = textColor;
+                ctx.font = 'bold 17px "Orbitron", "Rajdhani", Arial, sans-serif';
+                
+                // 选中选项的样式
+                if (isSelected) {
+                    ctx.save();
+                    ctx.fillStyle = BULLET_TYPES[optionLetters[index]].color;
+                    ctx.shadowColor = BULLET_TYPES[optionLetters[index]].color;
+                    ctx.shadowBlur = 6;
+                }
+                
+                // 绘制选项文本（位置稍作调整以适应新的字母样式）
+                ctx.fillText(option, boxX + 40, optionY + 8);
+                
+                if (isSelected) {
+                    ctx.restore();
+                }
             });
+            
+            ctx.restore();
         } else {
             // Show it's a True/False question
-            ctx.font = 'bold 16px Arial, sans-serif'; // Increased from 13px to 16px
-            ctx.fillStyle = textColor;
-            ctx.fillText('(True/False)', boxX + 15, boxY + Math.min(lines.length, maxDisplayLines + 1) * lineHeight + 25);
+            const tfY = textStartY + Math.min(lines.length, maxDisplayLines + 1) * lineHeight + 15;
+            
+            ctx.save();
+            
+            // 设置判断题文字样式
+            ctx.font = 'bold 16px "Orbitron", "Rajdhani", Arial, sans-serif';
+            ctx.fillStyle = '#00ffcc'; // 霓虹青绿
+            ctx.fillText('[判断题]', boxX + 15, tfY);
+            
+            // 绘制选项
+            const optionY = tfY + 25;
+            
+            // 真选项
+            ctx.fillStyle = BULLET_TYPES['TRUE'].color;
+            ctx.shadowColor = BULLET_TYPES['TRUE'].color;
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(boxX + 50, optionY, 20, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.fillText('TRUE', boxX + 30, optionY + 5);
+            
+            // 假选项
+            ctx.fillStyle = BULLET_TYPES['FALSE'].color;
+            ctx.shadowColor = BULLET_TYPES['FALSE'].color;
+            ctx.beginPath();
+            ctx.arc(boxX + 150, optionY, 20, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.fillText('FALSE', boxX + 130, optionY + 5);
+            
+            ctx.restore();
         }
         
         // Reset shadow after text rendering
