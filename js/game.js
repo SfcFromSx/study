@@ -415,8 +415,20 @@ class Enemy {
         ctx.fillStyle = this.color;
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 10;
-        ctx.fillText(`QUESTION #${this.questionIndex + 1}`, boxX + questionWidth/2, boxY + 16);
-        
+
+        // 获取问题类型
+        let questionTypeText = "";
+        if (question.type === 'multiSelect') {
+            questionTypeText = "【多选题】";
+        } else if (!question.options) {
+            questionTypeText = "【判断题】";
+        } else {
+            questionTypeText = "【单选题】";
+        }
+
+        // 绘制问题类型文本替代原来的QUESTION #X
+        ctx.fillText(questionTypeText, boxX + questionWidth/2, boxY + 16);
+
         // 重置为问题文本样式
         ctx.textAlign = 'left';
         ctx.restore();
@@ -474,14 +486,12 @@ class Enemy {
             
             // 显示是否为多选题
             if (question.type === 'multiSelect') {
-                ctx.font = 'bold 16px "Orbitron", "Rajdhani", Arial, sans-serif';
-                ctx.fillStyle = '#00ffcc'; // 霓虹青绿
-                ctx.fillText('[多选题]', boxX + 15, optionsY - 18);
+                // 移除多选题标签显示，因为已经移到标题处
                 
-                // Add extra instruction for multi-select questions
+                // 保留提交指引
                 ctx.fillStyle = '#ffcc00'; // 霓虹金黄
                 ctx.font = 'bold 16px "Orbitron", "Rajdhani", Arial, sans-serif';
-                ctx.fillText('[空格键提交]', boxX + 100, optionsY - 18);
+                ctx.fillText('[空格键提交]', boxX + 15, optionsY - 18);
             }
             
             // 创建选项背景和边框
@@ -541,10 +551,7 @@ class Enemy {
             
             ctx.save();
             
-            // 设置判断题文字样式
-            ctx.font = 'bold 16px "Orbitron", "Rajdhani", Arial, sans-serif';
-            ctx.fillStyle = '#00ffcc'; // 霓虹青绿
-            ctx.fillText('[判断题]', boxX + 15, tfY);
+            // 移除判断题标签，因为已经移到标题处
             
             // 绘制选项
             const optionY = tfY + 25;
