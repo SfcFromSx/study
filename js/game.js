@@ -355,8 +355,9 @@ class Enemy {
         const boxHeight = fixedHeight;
         
         // Position the question box above the enemy
-        const boxX = Math.max(5, Math.min(GAME_WIDTH - questionWidth - 5, this.x + this.width / 2 - questionWidth / 2));
-        const boxY = Math.max(5, this.y - boxHeight - 10);
+        // 通过四舍五入计算位置，防止像素级的抖动
+        const boxX = Math.round(Math.max(5, Math.min(GAME_WIDTH - questionWidth - 5, this.x + this.width / 2 - questionWidth / 2)));
+        const boxY = Math.round(Math.max(5, this.y - boxHeight - 10));
         
         // 半透明背景 - 增加透明度（降低不透明度）
         ctx.fillStyle = 'rgba(10, 5, 40, 0.4)'; // 由0.75改为0.4，增加透明度
@@ -406,7 +407,7 @@ class Enemy {
         ctx.fillStyle = this.color;
         ctx.shadowColor = this.color;
         ctx.shadowBlur = 10;
-        ctx.fillText(`QUESTION #${this.questionIndex + 1}`, boxX + questionWidth/2, boxY + 20);
+        ctx.fillText(`QUESTION #${this.questionIndex + 1}`, boxX + questionWidth/2, boxY + 16);
         
         // 重置为问题文本样式
         ctx.textAlign = 'left';
@@ -492,12 +493,8 @@ class Enemy {
                 ctx.font = 'bold 17px "Orbitron", "Rajdhani", Arial, sans-serif';
                 ctx.fillStyle = BULLET_TYPES[optionLetters[index]].color; // 使用与子弹相同的颜色
                 
-                // 绘制选项字母边框
+                // 移除选项字母边框
                 const letterX = boxX + 15;
-                const letterCircleSize = 16;
-                ctx.beginPath();
-                ctx.arc(letterX, optionY + 8, letterCircleSize/2, 0, Math.PI * 2);
-                ctx.stroke();
                 
                 // 绘制选项字母
                 ctx.textAlign = 'center';
@@ -548,17 +545,13 @@ class Enemy {
             ctx.fillStyle = BULLET_TYPES['TRUE'].color;
             ctx.shadowColor = BULLET_TYPES['TRUE'].color;
             ctx.shadowBlur = 8;
-            ctx.beginPath();
-            ctx.arc(boxX + 50, optionY, 20, 0, Math.PI * 2);
-            ctx.stroke();
+            // 移除圆形边框
             ctx.fillText('TRUE', boxX + 30, optionY + 5);
             
             // 假选项
             ctx.fillStyle = BULLET_TYPES['FALSE'].color;
             ctx.shadowColor = BULLET_TYPES['FALSE'].color;
-            ctx.beginPath();
-            ctx.arc(boxX + 150, optionY, 20, 0, Math.PI * 2);
-            ctx.stroke();
+            // 移除圆形边框
             ctx.fillText('FALSE', boxX + 130, optionY + 5);
             
             ctx.restore();
