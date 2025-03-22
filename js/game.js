@@ -123,44 +123,99 @@ class Player {
     }
     
     drawFallbackShip() {
-        // Draw ship body
-        ctx.fillStyle = '#4400ff'; // 深蓝紫色
-        ctx.beginPath();
-        ctx.moveTo(this.x + this.width / 2, this.y);
-        ctx.lineTo(this.x + this.width, this.y + this.height);
-        ctx.lineTo(this.x, this.y + this.height);
-        ctx.closePath();
-        ctx.fill();
+        // 保存当前绘图状态
+        ctx.save();
         
-        // Draw ship details
-        ctx.fillStyle = '#7733ff'; // 亮紫色
-        ctx.beginPath();
-        ctx.moveTo(this.x + this.width / 2, this.y + 10);
-        ctx.lineTo(this.x + this.width * 0.7, this.y + this.height * 0.8);
-        ctx.lineTo(this.x + this.width / 2, this.y + this.height * 0.7);
-        ctx.lineTo(this.x + this.width * 0.3, this.y + this.height * 0.8);
-        ctx.closePath();
-        ctx.fill();
-        
-        // Draw cockpit
-        ctx.fillStyle = '#00ffff'; // 霓虹青色
-        ctx.beginPath();
-        ctx.arc(this.x + this.width / 2, this.y + 15, 7, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Draw engine glow
-        ctx.fillStyle = '#ff00ff'; // 霓虹紫红色
-        ctx.beginPath();
-        ctx.arc(this.x + this.width / 2, this.y + this.height - 12, 5, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // 添加发光效果
-        ctx.shadowColor = '#ff00ff';
+        // 设置发光效果
+        ctx.shadowColor = '#00ffcc';
         ctx.shadowBlur = 15;
+        
+        // 飞机主体 - 三角形基础形状
+        ctx.fillStyle = '#1a0a3a'; // 深蓝紫色主体
         ctx.beginPath();
-        ctx.arc(this.x + this.width / 2, this.y + this.height - 12, 8, 0, Math.PI * 2);
+        ctx.moveTo(this.x + this.width / 2, this.y + 10); // 飞机头部尖端
+        ctx.lineTo(this.x + this.width - 20, this.y + this.height - 15); // 右下角
+        ctx.lineTo(this.x + 20, this.y + this.height - 15); // 左下角
+        ctx.closePath();
         ctx.fill();
-        ctx.shadowBlur = 0;
+        
+        // 机翼 - 左侧
+        ctx.fillStyle = '#3a1466'; // 更亮的紫色机翼
+        ctx.beginPath();
+        ctx.moveTo(this.x + this.width / 2 - 5, this.y + 35); // 连接点
+        ctx.lineTo(this.x - 10, this.y + this.height - 40); // 外侧尖端
+        ctx.lineTo(this.x + 30, this.y + this.height - 35); // 内侧底部
+        ctx.lineTo(this.x + this.width / 2 - 15, this.y + 50); // 上部连接点
+        ctx.closePath();
+        ctx.fill();
+        
+        // 机翼 - 右侧
+        ctx.beginPath();
+        ctx.moveTo(this.x + this.width / 2 + 5, this.y + 35); // 连接点
+        ctx.lineTo(this.x + this.width + 10, this.y + this.height - 40); // 外侧尖端
+        ctx.lineTo(this.x + this.width - 30, this.y + this.height - 35); // 内侧底部
+        ctx.lineTo(this.x + this.width / 2 + 15, this.y + 50); // 上部连接点
+        ctx.closePath();
+        ctx.fill();
+        
+        // 驾驶舱/前窗 - 发光效果
+        ctx.fillStyle = '#00ffcc'; // 霓虹青色
+        ctx.beginPath();
+        ctx.moveTo(this.x + this.width / 2, this.y + 20);
+        ctx.lineTo(this.x + this.width / 2 + 15, this.y + 45);
+        ctx.lineTo(this.x + this.width / 2 - 15, this.y + 45);
+        ctx.closePath();
+        ctx.fill();
+        
+        // 引擎光束 - 中央
+        const engineGlowY = this.y + this.height - 15;
+        
+        // 飞机底部引擎发光效果
+        ctx.fillStyle = '#ff00aa'; // 霓虹粉色引擎光芒
+        
+        // 中央引擎
+        ctx.beginPath();
+        ctx.moveTo(this.x + this.width / 2 - 10, engineGlowY);
+        ctx.lineTo(this.x + this.width / 2 + 10, engineGlowY);
+        ctx.lineTo(this.x + this.width / 2 + 15, engineGlowY + 25);
+        ctx.lineTo(this.x + this.width / 2 - 15, engineGlowY + 25);
+        ctx.closePath();
+        ctx.fill();
+        
+        // 左侧小引擎
+        ctx.beginPath();
+        ctx.moveTo(this.x + 30, engineGlowY);
+        ctx.lineTo(this.x + 45, engineGlowY);
+        ctx.lineTo(this.x + 40, engineGlowY + 15);
+        ctx.lineTo(this.x + 25, engineGlowY + 15);
+        ctx.closePath();
+        ctx.fill();
+        
+        // 右侧小引擎
+        ctx.beginPath();
+        ctx.moveTo(this.x + this.width - 30, engineGlowY);
+        ctx.lineTo(this.x + this.width - 45, engineGlowY);
+        ctx.lineTo(this.x + this.width - 40, engineGlowY + 15);
+        ctx.lineTo(this.x + this.width - 25, engineGlowY + 15);
+        ctx.closePath();
+        ctx.fill();
+        
+        // 装饰线条 - 左侧
+        ctx.strokeStyle = '#00ffff';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(this.x + this.width / 2 - 10, this.y + 35);
+        ctx.lineTo(this.x + 40, this.y + this.height - 30);
+        ctx.stroke();
+        
+        // 装饰线条 - 右侧
+        ctx.beginPath();
+        ctx.moveTo(this.x + this.width / 2 + 10, this.y + 35);
+        ctx.lineTo(this.x + this.width - 40, this.y + this.height - 30);
+        ctx.stroke();
+        
+        // 重置阴影效果
+        ctx.restore();
     }
 
     move(direction) {
@@ -1542,24 +1597,24 @@ function renderQuestionStats() {
         // Add tooltip showing question number
         statBox.title = `点击查看题目 #${index + 1} 详情`;
         
-        // 赛博朋克风格颜色
+        // 赛博朋克风格颜色 - 调整为更柔和的色调，问题编号使用白色
         switch(status) {
             case 'correct':
-                statBox.style.backgroundColor = '#00ff66'; // 霓虹绿
-                statBox.style.borderColor = '#00cc33'; // 深霓虹绿
-                statBox.style.color = '#000000';
-                statBox.style.boxShadow = '0 0 8px #00ff66'; // 发光效果
+                statBox.style.backgroundColor = '#00dd66'; // 稍微暗一点的绿色
+                statBox.style.borderColor = '#00aa44'; // 更暗的绿色边框
+                statBox.style.color = '#ffffff'; // 白色数字
+                statBox.style.boxShadow = '0 0 6px #00dd66'; // 弱化发光效果
                 break;
             case 'wrong':
-                statBox.style.backgroundColor = '#ff3366'; // 霓虹红
-                statBox.style.borderColor = '#cc0033'; // 深霓虹红
-                statBox.style.color = '#000000';
-                statBox.style.boxShadow = '0 0 8px #ff3366'; // 发光效果
+                statBox.style.backgroundColor = '#ee3366'; // 稍微柔和的红色
+                statBox.style.borderColor = '#aa1144'; // 更暗的红色边框
+                statBox.style.color = '#ffffff'; // 白色数字
+                statBox.style.boxShadow = '0 0 6px #ee3366'; // 弱化发光效果
                 break;
             case 'unanswered':
-                statBox.style.backgroundColor = 'rgba(20, 0, 40, 0.5)'; // 半透明深紫
-                statBox.style.borderColor = '#bb33ff'; // 霓虹紫边框
-                statBox.style.color = '#bb33ff';
+                statBox.style.backgroundColor = 'rgba(40, 20, 80, 0.6)'; // 更深、更不透明的紫色
+                statBox.style.borderColor = '#6633aa'; // 稍微暗一点的紫色边框
+                statBox.style.color = '#e6e6ff'; // 淡蓝白色数字
                 break;
         }
         
@@ -1572,9 +1627,9 @@ function renderQuestionStats() {
     statLegend.className = 'stat-legend';
     
     const legendItems = [
-        { class: 'unanswered', label: '未回答', color: '#bb33ff' }, // 霓虹紫
-        { class: 'correct', label: '正确', color: '#00ff66' }, // 霓虹绿
-        { class: 'wrong', label: '错误', color: '#ff3366' } // 霓虹红
+        { class: 'unanswered', label: '未回答', color: '#8855dd' }, // 更柔和的紫色
+        { class: 'correct', label: '正确', color: '#00dd66' }, // 稍微暗一点的绿色
+        { class: 'wrong', label: '错误', color: '#ee3366' } // 稍微柔和的红色
     ];
     
     legendItems.forEach(item => {
@@ -1584,7 +1639,7 @@ function renderQuestionStats() {
         const legendColor = document.createElement('span');
         legendColor.className = `legend-color ${item.class}`;
         legendColor.style.backgroundColor = item.color;
-        legendColor.style.boxShadow = `0 0 5px ${item.color}`; // 发光效果
+        legendColor.style.boxShadow = `0 0 4px ${item.color}`; // 减弱发光效果
         
         const legendLabel = document.createElement('span');
         legendLabel.textContent = item.label;
@@ -1605,9 +1660,9 @@ function renderQuestionStats() {
     const statsCounter = document.createElement('div');
     statsCounter.className = 'stats-counter';
     statsCounter.innerHTML = `
-        <div style="color: #00ff66; text-shadow: 0 0 3px #00ff66;">正确: ${correctCount}</div>
-        <div style="color: #ff3366; text-shadow: 0 0 3px #ff3366;">错误: ${wrongCount}</div>
-        <div style="color: #bb33ff; text-shadow: 0 0 3px #bb33ff;">未回答: ${unansweredCount}</div>
+        <div style="color: #00dd66; text-shadow: 0 0 3px #00dd66;">正确: ${correctCount}</div>
+        <div style="color: #ee3366; text-shadow: 0 0 3px #ee3366;">错误: ${wrongCount}</div>
+        <div style="color: #8855dd; text-shadow: 0 0 3px #8855dd;">未回答: ${unansweredCount}</div>
     `;
     
     statsContainerElement.appendChild(statsCounter);
