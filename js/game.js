@@ -354,10 +354,11 @@ class Enemy {
         const fixedHeight = 180; // Increased from 150 to 180
         const boxHeight = fixedHeight;
         
-        // Position the question box above the enemy
+        // 使用稳定的位置计算方法，通过对 this.y 取整数进一步稳定位置
         // 通过四舍五入计算位置，防止像素级的抖动
+        const enemyY = Math.floor(this.y); // 取整数
         const boxX = Math.round(Math.max(5, Math.min(GAME_WIDTH - questionWidth - 5, this.x + this.width / 2 - questionWidth / 2)));
-        const boxY = Math.round(Math.max(5, this.y - boxHeight - 10));
+        const boxY = Math.round(Math.max(5, enemyY - boxHeight - 10));
         
         // 半透明背景 - 增加透明度（降低不透明度）
         ctx.fillStyle = 'rgba(10, 5, 40, 0.4)'; // 由0.75改为0.4，增加透明度
@@ -1789,37 +1790,122 @@ function drawComboCount() {
         fontSize = Math.min(48, 30 + comboCount * 2); // Size increases with combo
     }
     
-    ctx.font = `bold ${fontSize}px Arial`;
+    const centerX = GAME_WIDTH / 2;
+    const centerY = 100;
+    
+    // 创建赛博朋克风格的背景效果
+    const glitchAmount = Math.sin(Date.now() / 150) * 5; // 故障效果抖动量
+    
+    // 添加故障背景
+    ctx.save();
+    
+    // 添加故障背景矩形
+    const textWidth = ctx.measureText(comboMessage).width;
+    const bgWidth = textWidth * 1.4;
+    const bgHeight = fontSize * 1.6;
+    
+    // 绘制背景故障效果
+    for (let i = 0; i < 3; i++) {
+        const offsetX = (Math.random() - 0.5) * glitchAmount * 2;
+        const offsetY = (Math.random() - 0.5) * glitchAmount * 2;
+        
+        // 创建渐变背景
+        const gradient = ctx.createLinearGradient(
+            centerX - bgWidth/2, centerY - bgHeight/2,
+            centerX + bgWidth/2, centerY + bgHeight/2
+        );
+        
+        // 使用更酷的渐变颜色
+        gradient.addColorStop(0, 'rgba(0, 30, 60, 0.7)');
+        gradient.addColorStop(0.5, 'rgba(20, 0, 40, 0.8)');
+        gradient.addColorStop(1, 'rgba(0, 30, 60, 0.7)');
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(
+            centerX - bgWidth/2 + offsetX, 
+            centerY - bgHeight/2 + offsetY, 
+            bgWidth, bgHeight
+        );
+    }
+    
+    // 添加霓虹边框效果
+    ctx.strokeStyle = '#00ffff';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(centerX - bgWidth/2, centerY - bgHeight/2, bgWidth, bgHeight);
+    
+    // 添加内部扫描线
+    const scanLineOpacity = 0.2;
+    const scanLineSpacing = 4;
+    ctx.fillStyle = `rgba(0, 255, 255, ${scanLineOpacity})`;
+    
+    for (let y = centerY - bgHeight/2; y < centerY + bgHeight/2; y += scanLineSpacing) {
+        ctx.fillRect(centerX - bgWidth/2, y, bgWidth, 1);
+    }
+    
+    // 绘制文字内容
+    ctx.font = `bold ${fontSize}px "Orbitron", "Rajdhani", Arial, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
-    // Text shadow for better visibility - 增强霓虹效果
-    ctx.shadowColor = 'rgba(0, 255, 100, 0.9)';
-    ctx.shadowBlur = 20;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
+    // 文字故障效果 - 绘制多层文字，有轻微错位
+    const glitchColors = ['#ff00de', '#00ffcc', '#ffffff'];
     
-    // 使用霓虹绿色作为基础连击颜色
-    const comboColor = '#00ff66'; // 霓虹绿
+    glitchColors.forEach((color, i) => {
+        const offsetX = (Math.random() - 0.5) * glitchAmount;
+        const offsetY = (Math.random() - 0.5) * glitchAmount;
+        
+        // 文字阴影和发光效果
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 20;
+        ctx.fillStyle = color;
+        
+        // 绘制错位文字
+        ctx.fillText(comboMessage, centerX + offsetX, centerY + offsetY);
+    });
     
-    // Add pulsing effect for high combos (only at milestones)
-    let scale = 1.0;
-    if (comboCount === 5 || comboCount === 10 || comboCount === 20) {
-        scale = 1.0 + 0.05 * Math.sin(Date.now() / 100);
-    }
+    // 绘制主文字 - 永远位于顶层且位置固定
+    ctx.shadowColor = '#00ffff';
+    ctx.shadowBlur = 30;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(comboMessage, centerX, centerY);
     
-    // Draw combo text with slight animation
-    ctx.save();
-    ctx.translate(GAME_WIDTH / 2, 100);
-    ctx.scale(scale, scale);
-    ctx.fillStyle = comboColor;
-    ctx.fillText(comboMessage, 0, 0);
+    // 在文字周围添加电子线条效果
+    const lineLength = bgWidth * 0.2;
+    const cornerOffset = 10;
+    
+    ctx.strokeStyle = '#00ffff';
+    ctx.lineWidth = 2;
+    
+    // 左上角装饰
+    ctx.beginPath();
+    ctx.moveTo(centerX - bgWidth/2, centerY - bgHeight/2 + cornerOffset);
+    ctx.lineTo(centerX - bgWidth/2, centerY - bgHeight/2);
+    ctx.lineTo(centerX - bgWidth/2 + cornerOffset, centerY - bgHeight/2);
+    ctx.stroke();
+    
+    // 右上角装饰
+    ctx.beginPath();
+    ctx.moveTo(centerX + bgWidth/2, centerY - bgHeight/2 + cornerOffset);
+    ctx.lineTo(centerX + bgWidth/2, centerY - bgHeight/2);
+    ctx.lineTo(centerX + bgWidth/2 - cornerOffset, centerY - bgHeight/2);
+    ctx.stroke();
+    
+    // 左下角装饰
+    ctx.beginPath();
+    ctx.moveTo(centerX - bgWidth/2, centerY + bgHeight/2 - cornerOffset);
+    ctx.lineTo(centerX - bgWidth/2, centerY + bgHeight/2);
+    ctx.lineTo(centerX - bgWidth/2 + cornerOffset, centerY + bgHeight/2);
+    ctx.stroke();
+    
+    // 右下角装饰
+    ctx.beginPath();
+    ctx.moveTo(centerX + bgWidth/2, centerY + bgHeight/2 - cornerOffset);
+    ctx.lineTo(centerX + bgWidth/2, centerY + bgHeight/2);
+    ctx.lineTo(centerX + bgWidth/2 - cornerOffset, centerY + bgHeight/2);
+    ctx.stroke();
+    
+    // 重置状态
     ctx.restore();
-    
-    // Reset shadow
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetX = 0;
-    ctx.shadowOffsetY = 0;
 }
 
 // Update combo display color based on combo count
@@ -1835,13 +1921,32 @@ function updateComboDisplayColor() {
     // Add animation effect ONLY for exact milestone combos
     if (comboCount === 5 || comboCount === 10 || comboCount === 20) {
         comboDisplayElement.style.fontSize = '36px'; // Temporarily make it larger
-        comboDisplayElement.style.textShadow = `0 0 15px ${greenColor}, 0 0 25px ${greenColor}`; // 增强辉光效果
+        comboDisplayElement.style.textShadow = `0 0 15px ${greenColor}, 0 0 25px ${greenColor}, 0 0 35px ${greenColor}`; // 更强烈的辉光效果
         
-        // Reset after animation
-        setTimeout(() => {
-            comboDisplayElement.style.fontSize = '32px'; // Back to normal size
-            comboDisplayElement.style.textShadow = `0 0 10px ${greenColor}`; // Normal glow
-        }, 500);
+        // 添加闪烁动画
+        const blinkAnimation = () => {
+            let count = 0;
+            const interval = setInterval(() => {
+                if (count >= 6) { // 3次闪烁后停止
+                    clearInterval(interval);
+                    comboDisplayElement.style.fontSize = '32px'; // Back to normal size
+                    comboDisplayElement.style.textShadow = `0 0 10px ${greenColor}`; // Normal glow
+                    return;
+                }
+                
+                // 交替增强和减弱辉光效果
+                if (count % 2 === 0) {
+                    comboDisplayElement.style.textShadow = `0 0 5px ${greenColor}, 0 0 10px ${greenColor}`;
+                    comboDisplayElement.style.opacity = '0.7';
+                } else {
+                    comboDisplayElement.style.textShadow = `0 0 15px ${greenColor}, 0 0 25px ${greenColor}, 0 0 35px ${greenColor}`;
+                    comboDisplayElement.style.opacity = '1';
+                }
+                count++;
+            }, 80); // 快速闪烁
+        };
+        
+        blinkAnimation();
     }
 }
 
