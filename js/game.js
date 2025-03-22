@@ -46,6 +46,7 @@ let comboCount = 0; // 连击计数
 let fireworks = []; // 烟花特效数组
 let comboDisplayTimer = null; // Timer for combo display
 let shouldShowComboText = false; // Flag to control combo text display
+let backgroundImage = null; // 背景图片
 
 // 题库和难度相关变量
 let selectedBankId = null;
@@ -602,6 +603,10 @@ function initGame() {
     ctx.imageSmoothingEnabled = true;
     ctx.textRendering = 'optimizeLegibility';
     
+    // 加载背景图片
+    backgroundImage = new Image();
+    backgroundImage.src = 'assets/background.png';
+    
     // Calculate appropriate size based on container
     function resizeCanvas() {
         const gameArea = document.querySelector('.game-area');
@@ -945,9 +950,43 @@ function gameOver() {
 
 // Main game update loop
 function gameUpdate() {
-    // Clear canvas
-    ctx.fillStyle = '#121240';
-    ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    // Clear canvas and draw background
+    if (backgroundImage && backgroundImage.complete) {
+        // 绘制背景图片
+        // 方法1：简单缩放填充（可能会变形）
+        // ctx.drawImage(backgroundImage, 0, 0, GAME_WIDTH, GAME_HEIGHT);
+        
+        // 方法2：保持宽高比例，居中填充
+        const imgRatio = backgroundImage.width / backgroundImage.height;
+        const canvasRatio = GAME_WIDTH / GAME_HEIGHT;
+        
+        let drawWidth, drawHeight, offsetX, offsetY;
+        
+        if (canvasRatio > imgRatio) {
+            // 画布比图片"扁平"，以宽度为基准
+            drawWidth = GAME_WIDTH;
+            drawHeight = GAME_WIDTH / imgRatio;
+            offsetX = 0;
+            offsetY = (GAME_HEIGHT - drawHeight) / 2;
+        } else {
+            // 画布比图片"狭长"，以高度为基准
+            drawHeight = GAME_HEIGHT;
+            drawWidth = GAME_HEIGHT * imgRatio;
+            offsetX = (GAME_WIDTH - drawWidth) / 2;
+            offsetY = 0;
+        }
+        
+        // 添加一点半透明暗色叠加，使游戏元素更显眼
+        ctx.drawImage(backgroundImage, offsetX, offsetY, drawWidth, drawHeight);
+        
+        // 添加轻微的暗色叠加，增强游戏元素可见度
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    } else {
+        // 如果图片未加载完成，使用纯色背景作为备选
+        ctx.fillStyle = '#121240';
+        ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    }
     
     if (!gameActive) return;
     if (gamePaused) {
