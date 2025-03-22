@@ -1,0 +1,64 @@
+{
+  "name": "历史知识",
+  "description": "关于世界历史和中国历史的问题",
+  "questions": {
+    "multipleChoice": [
+      {
+        "question": "被称为"世界古代七大奇迹"之一，位于埃及的建筑是什么？",
+        "options": ["巴比伦空中花园", "亚历山大灯塔", "吉萨金字塔", "阿尔忒弥斯神庙"],
+        "correctAnswer": "C"
+      },
+      {
+        "question": "谁发明了印刷术？",
+        "options": ["毕昇", "蔡伦", "张衡", "李时珍"],
+        "correctAnswer": "A"
+      },
+      {
+        "question": "第一次世界大战开始于哪一年？",
+        "options": ["1905年", "1914年", "1918年", "1939年"],
+        "correctAnswer": "B"
+      },
+      {
+        "question": "中国四大发明不包括以下哪一项？",
+        "options": ["指南针", "火药", "印刷术", "蒸汽机"],
+        "correctAnswer": "D"
+      },
+      {
+        "question": "秦始皇统一中国的年份是？",
+        "options": ["公元前221年", "公元前206年", "公元前356年", "公元前328年"],
+        "correctAnswer": "A"
+      },
+      {
+        "question": "以下哪位不是美国开国元勋？",
+        "options": ["华盛顿", "杰斐逊", "林肯", "富兰克林"],
+        "correctAnswer": "C"
+      }
+    ],
+    "trueFalse": [
+      {
+        "question": "秦朝是中国历史上第一个统一的封建王朝。",
+        "correctAnswer": "TRUE"
+      },
+      {
+        "question": "莎士比亚是法国人。",
+        "correctAnswer": "FALSE"
+      },
+      {
+        "question": "埃菲尔铁塔是为了1889年世界博览会而建造的。",
+        "correctAnswer": "TRUE"
+      },
+      {
+        "question": "拿破仑出生于法国巴黎。",
+        "correctAnswer": "FALSE"
+      },
+      {
+        "question": "长城始建于秦朝。",
+        "correctAnswer": "FALSE"
+      },
+      {
+        "question": "唐朝是中国历史上疆域最大的朝代。",
+        "correctAnswer": "FALSE"
+      }
+    ]
+  }
+} 

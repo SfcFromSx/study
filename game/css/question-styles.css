@@ -1,0 +1,56 @@
+/* 问题样式设置 */
+
+/* 问题框基本样式 */
+.question-box {
+    --question-width: 350px; /* 问题框宽度 */
+    --line-height: 15px; /* 行高 */
+    --font-size: 14px; /* 字体大小 */
+    --padding: 15px; /* 内边距 */
+    --background-opacity: 0.3; /* 背景透明度 */
+    --shadow-blur: 4px; /* 阴影模糊程度 */
+}
+
+/* 问题文字样式 */
+.question-text {
+    --font-family: Arial, sans-serif; /* 字体系列 */
+    --default-color: white; /* 默认文字颜色 */
+    --level1-color: #ffff00; /* 一级保护套文字颜色(黄色) */
+    --level2-color: #ffa500; /* 二级保护套文字颜色(橙色) */
+    --level3-color: #ff0000; /* 三级保护套文字颜色(红色) */
+}
+
+/* 选项样式 */
+.question-options {
+    --option-font-size: 13px; /* 选项字体大小 */
+    --option-spacing: 15px; /* 选项间距 */
+}
+
+/* 弹幕样式 */
+.bullet {
+    --bullet-width: 20px; /* 弹幕宽度 */
+    --bullet-height: 20px; /* 弹幕高度 */
+    --bullet-speed: 3; /* 弹幕速度 */
+    
+    /* 弹幕颜色 */
+    --bullet-a-color: #ff5252; /* A选项弹幕颜色 */
+    --bullet-b-color: #4caf50; /* B选项弹幕颜色 */
+    --bullet-c-color: #2196f3; /* C选项弹幕颜色 */
+    --bullet-d-color: #ff9800; /* D选项弹幕颜色 */
+    --bullet-true-color: #4caf50; /* 正确弹幕颜色 */
+    --bullet-false-color: #ff5252; /* 错误弹幕颜色 */
+}
+
+/* 命中区样式 */
+.hitbox {
+    --hitbox-height: 20px; /* 命中区高度 */
+    --hitbox-extend: 10px; /* 命中区向上延伸距离 */
+}
+
+/* 保护套样式 */
+.shield {
+    --shield-level0-color: white; /* 无保护套颜色 */
+    --shield-level1-color: #ffff00; /* 一级保护套颜色 */
+    --shield-level2-color: #ffa500; /* 二级保护套颜色 */
+    --shield-level3-color: #ff0000; /* 三级保护套颜色(无敌) */
+    --shield-max: 3; /* 最大保护套数量 */
+} 

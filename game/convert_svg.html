@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SVG to PNG Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .preview {
+            margin: 20px 0;
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4c4cff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>SVG to PNG Converter</h1>
+    <p>This tool converts the player.svg to player.png for the game. Click the button below to render and download the converted image.</p>
+    
+    <div class="preview">
+        <h3>SVG Preview:</h3>
+        <img id="svgImage" src="assets/player.svg" width="50" height="60">
+    </div>
+    
+    <button id="convertButton">Convert and Download PNG</button>
+    
+    <div class="preview">
+        <h3>PNG Preview:</h3>
+        <canvas id="canvas" width="50" height="60"></canvas>
+    </div>
+    
+    <script>
+        document.getElementById('convertButton').addEventListener('click', function() {
+            const svgImage = document.getElementById('svgImage');
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Draw SVG to canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(svgImage, 0, 0, 50, 60);
+            
+            // Create download link
+            const pngImage = canvas.toDataURL('image/png');
+            const downloadLink = document.createElement('a');
+            downloadLink.href = pngImage;
+            downloadLink.download = 'player.png';
+            
+            // Append, click, and remove
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        });
+    </script>
+</body>
+</html> 

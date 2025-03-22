@@ -1,0 +1,69 @@
+{
+  "name": "科学知识",
+  "description": "关于物理、化学、生物学等科学领域的问题",
+  "questions": {
+    "multipleChoice": [
+      {
+        "question": "水的化学式是什么？",
+        "options": ["H2O", "CO2", "O2", "H2SO4"],
+        "correctAnswer": "A"
+      },
+      {
+        "question": "人体中最大的器官是什么？",
+        "options": ["肝脏", "大脑", "皮肤", "心脏"],
+        "correctAnswer": "C"
+      },
+      {
+        "question": "以下哪种物质是绝缘体？",
+        "options": ["铁", "铜", "铝", "橡胶"],
+        "correctAnswer": "D"
+      },
+      {
+        "question": "光速大约是多少？",
+        "options": ["3万公里/秒", "30万公里/秒", "300万公里/秒", "3000万公里/秒"],
+        "correctAnswer": "B"
+      },
+      {
+        "question": "电是由什么粒子流动形成的？",
+        "options": ["质子", "中子", "电子", "原子"],
+        "correctAnswer": "C"
+      },
+      {
+        "question": "人体中的血液大约占体重的多少比例？",
+        "options": ["3%", "7%", "15%", "25%"],
+        "correctAnswer": "B"
+      },
+      {
+        "question": "以下哪种元素在周期表中的符号是Fe？",
+        "options": ["铁", "锡", "铅", "氟"],
+        "correctAnswer": "A"
+      }
+    ],
+    "trueFalse": [
+      {
+        "question": "声音在真空中可以传播。",
+        "correctAnswer": "FALSE"
+      },
+      {
+        "question": "钻石是由碳元素组成的。",
+        "correctAnswer": "TRUE"
+      },
+      {
+        "question": "闪电和雷声同时发生。",
+        "correctAnswer": "FALSE"
+      },
+      {
+        "question": "地球的大气层主要由氧气组成。",
+        "correctAnswer": "FALSE"
+      },
+      {
+        "question": "细菌是单细胞生物。",
+        "correctAnswer": "TRUE"
+      },
+      {
+        "question": "人类DNA中大约包含3000个基因。",
+        "correctAnswer": "FALSE"
+      }
+    ]
+  }
+} 

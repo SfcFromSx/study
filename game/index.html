@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Space Quiz Shooter</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/question-styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <div class="question-area">
+            <div id="stats-container" class="stats-container">
+                <h3>题目统计</h3>
+                <div class="stats-grid">
+                    <!-- Stats will be filled dynamically -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-area">
+            <canvas id="game-canvas"></canvas>
+            
+            <!-- Vertical text elements -->
+            <div class="vertical-text left">学海无涯</div>
+            <div class="vertical-text right">回头是岸</div>
+            
+            <div id="pause-overlay" class="hidden">
+                <h2>PAUSED</h2>
+                <p>Press SPACE to resume</p>
+            </div>
+            
+            <!-- 题库选择界面 -->
+            <div id="question-bank-screen">
+                <h2>选择题库</h2>
+                <div id="question-banks-container" class="question-banks-grid">
+                    <!-- 题库列表将动态加载 -->
+                    <div class="loading-message">加载题库中...</div>
+                </div>
+                
+                <!-- 难度选择部分 -->
+                <div class="difficulty-selector">
+                    <h3>选择难度</h3>
+                    <div class="difficulty-options">
+                        <div class="difficulty-option selected" data-difficulty="easy">
+                            <span class="difficulty-name">简单</span>
+                            <span class="difficulty-desc">回答错误会给敌人增加护盾</span>
+                        </div>
+                        <div class="difficulty-option" data-difficulty="advanced">
+                            <span class="difficulty-name">高级</span>
+                            <span class="difficulty-desc">一次答错就将敌人升级到无敌状态</span>
+                        </div>
+                        <div class="difficulty-option" data-difficulty="expert">
+                            <span class="difficulty-name">资深</span>
+                            <span class="difficulty-desc">敌人下降速度增加到2倍</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="select-bank-button" disabled>选择这个题库</button>
+            </div>
+            
+            <!-- 开始界面 -->
+            <div id="start-screen" class="hidden">
+                <h2>Space Quiz Shooter</h2>
+                <p>题库: <span id="selected-bank-name">未选择</span></p>
+                <p>题目数量: <span id="selected-sample-size">0</span></p>
+                
+                <p>操作说明:</p>
+                <p>移动: 左右方向键<br>
+                   射击: A, B, C, D, W (✅), E (❌)<br>
+                   暂停/继续: 空格键</p>
+                
+                <button id="start-button">开始游戏</button>
+                <button id="change-bank-button">更换题库</button>
+            </div>
+            
+            <div id="game-over-screen" class="hidden">
+                <h2>游戏结束</h2>
+                <p>你的分数: <span id="final-score">0</span></p>
+                <button id="restart-button">再玩一次</button>
+                <button id="change-bank-button-gameover">更换题库</button>
+            </div>
+        </div>
+        
+        <div class="stats-area">
+            <div class="score-box">
+                <h3>分数: <span id="score">0</span></h3>
+            </div>
+            <div class="health-container">
+                <h3>生命值</h3>
+                <div class="health-bar" id="health-bar"></div>
+            </div>
+            <div class="controls-info">
+                <h3>控制说明</h3>
+                <p>移动: 左右方向键</p>
+                <p>射击:</p>
+                <ul>
+                    <li>A: 选项 A</li>
+                    <li>S: 选项 B</li>
+                    <li>D: 选项 C</li>
+                    <li>F: 选项 D</li>
+                    <li>W: 是 (✅)</li>
+                    <li>E: 否 (❌)</li>
+                </ul>
+                <p>暂停/继续: 空格键</p>
+            </div>
+            
+            <!-- 右侧区域底部文字 -->
+            <div class="bottom-quote">回头是岸</div>
+        </div>
+    </div>
+
+    <script src="js/question-manager.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html> 

@@ -1,0 +1,30 @@
+[
+  {
+    "id": "space",
+    "name": "太空知识",
+    "description": "关于宇宙、行星和太空探索的问题",
+    "file": "space.json",
+    "count": 10
+  },
+  {
+    "id": "science",
+    "name": "科学知识",
+    "description": "关于物理、化学、生物学等科学领域的问题",
+    "file": "science.json",
+    "count": 13
+  },
+  {
+    "id": "history",
+    "name": "历史知识",
+    "description": "关于世界历史和中国历史的问题",
+    "file": "history.json",
+    "count": 12
+  },
+  {
+    "id": "math",
+    "name": "算术题库",
+    "description": "两位数以内的加减法练习",
+    "file": "math.json",
+    "count": 24
+  }
+] 

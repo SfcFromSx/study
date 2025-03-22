@@ -1,0 +1,7 @@
+To create the player.png file:
+
+1. Open the game/convert_svg.html file in a web browser
+2. Click the "Convert and Download PNG" button
+3. Save the downloaded player.png file in the game/assets/ directory
+
+Alternatively, you can use any image editing software to create a simple spaceship image, save it as player.png, and place it in the game/assets/ directory. The fallback drawing in the game code will handle cases where the PNG is missing. 

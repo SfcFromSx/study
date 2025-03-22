@@ -1,0 +1,120 @@
+{
+  "name": "算术题库",
+  "description": "两位数以内的加减法练习",
+  "questions": {
+    "multipleChoice": [
+      {
+        "question": "12 + 15 = ?",
+        "options": ["25", "27", "28", "29"],
+        "correctAnswer": "B"
+      },
+      {
+        "question": "38 - 19 = ?",
+        "options": ["19", "18", "17", "21"],
+        "correctAnswer": "A"
+      },
+      {
+        "question": "27 + 35 = ?",
+        "options": ["52", "62", "63", "72"],
+        "correctAnswer": "B"
+      },
+      {
+        "question": "56 - 28 = ?",
+        "options": ["28", "26", "30", "24"],
+        "correctAnswer": "A"
+      },
+      {
+        "question": "45 + 17 = ?",
+        "options": ["52", "62", "61", "63"],
+        "correctAnswer": "B"
+      },
+      {
+        "question": "73 - 46 = ?",
+        "options": ["27", "26", "28", "29"],
+        "correctAnswer": "A"
+      },
+      {
+        "question": "23 + 49 = ?",
+        "options": ["62", "72", "71", "73"],
+        "correctAnswer": "B"
+      },
+      {
+        "question": "91 - 27 = ?",
+        "options": ["63", "64", "65", "62"],
+        "correctAnswer": "B"
+      },
+      {
+        "question": "34 + 28 = ?",
+        "options": ["62", "61", "63", "64"],
+        "correctAnswer": "A"
+      },
+      {
+        "question": "67 - 39 = ?",
+        "options": ["28", "27", "29", "26"],
+        "correctAnswer": "A"
+      },
+      {
+        "question": "14 + 36 = ?",
+        "options": ["50", "40", "60", "52"],
+        "correctAnswer": "A"
+      },
+      {
+        "question": "58 - 25 = ?",
+        "options": ["33", "32", "34", "35"],
+        "correctAnswer": "A"
+      },
+      {
+        "question": "31 + 42 = ?",
+        "options": ["73", "72", "74", "71"],
+        "correctAnswer": "A"
+      },
+      {
+        "question": "87 - 52 = ?",
+        "options": ["35", "34", "36", "37"],
+        "correctAnswer": "A"
+      }
+    ],
+    "trueFalse": [
+      {
+        "question": "16 + 27 = 43",
+        "correctAnswer": "TRUE"
+      },
+      {
+        "question": "35 - 18 = 18",
+        "correctAnswer": "FALSE"
+      },
+      {
+        "question": "44 + 38 = 82",
+        "correctAnswer": "TRUE"
+      },
+      {
+        "question": "76 - 29 = 47",
+        "correctAnswer": "TRUE"
+      },
+      {
+        "question": "23 + 45 = 68",
+        "correctAnswer": "TRUE"
+      },
+      {
+        "question": "51 - 24 = 26",
+        "correctAnswer": "FALSE"
+      },
+      {
+        "question": "39 + 25 = 64",
+        "correctAnswer": "TRUE"
+      },
+      {
+        "question": "82 - 37 = 45",
+        "correctAnswer": "TRUE"
+      },
+      {
+        "question": "17 + 36 = 52",
+        "correctAnswer": "FALSE"
+      },
+      {
+        "question": "63 - 28 = 35",
+        "correctAnswer": "TRUE"
+      }
+    ]
+  }
+} 
