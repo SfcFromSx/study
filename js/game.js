@@ -58,6 +58,7 @@ const questionBankScreen = document.getElementById('question-bank-screen');
 const finalScoreElement = document.getElementById('final-score');
 const scoreElement = document.getElementById('score');
 const healthBarElement = document.getElementById('health-bar');
+const comboDisplayElement = document.getElementById('combo-display');
 const statsContainerElement = document.getElementById('stats-container');
 const startButton = document.getElementById('start-button');
 const restartButton = document.getElementById('restart-button');
@@ -733,6 +734,9 @@ function startGame() {
     shieldCount = 0;
     isInvincible = false;
     
+    // Reset UI displays
+    comboDisplayElement.textContent = '0';
+    
     // Hide start screen and pause overlay
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
@@ -794,7 +798,7 @@ function gameUpdate() {
         ctx.textBaseline = 'middle';
         ctx.fillText('PAUSED', GAME_WIDTH / 2, GAME_HEIGHT / 2);
         ctx.font = '16px Arial';
-        ctx.fillText('Press SPACE to resume', GAME_WIDTH / 2, GAME_HEIGHT / 2 + 30);
+        ctx.fillText('Press P to resume', GAME_WIDTH / 2, GAME_HEIGHT / 2 + 30);
         return;
     }
     
@@ -1098,12 +1102,10 @@ function handleKeyDown(e) {
     } else if (key === 'e') {
         player.shoot('FALSE');
     } else if (key === ' ') { // 空格键
-        if (gamePaused) {
-            resumeGame();
-        } else {
-            // 如果游戏未暂停，发射提交子弹
-            player.shoot('SUBMIT');
-        }
+        // 空格键只用于提交答案
+        player.shoot('SUBMIT');
+    } else if (key === 'p') { // P键用于暂停/恢复游戏
+        togglePause();
     }
 }
 
@@ -1112,11 +1114,8 @@ function handleKeyUp(e) {
     
     if (key === 'arrowleft' || key === 'arrowright') {
         player.stop();
-    } else if (key === ' ' && !gamePaused) { // 空格键松开且游戏未暂停状态
-        // 什么都不做，避免暂停游戏
-    } else if (key === ' ') { // 空格键松开且游戏已暂停
-        pauseGame();
     }
+    // 移除空格键暂停/恢复功能
 }
 
 // 暂停游戏
@@ -1214,6 +1213,9 @@ function drawComboCount() {
 function incrementCombo() {
     comboCount++;
     
+    // Update the combo display in the DOM
+    comboDisplayElement.textContent = comboCount;
+    
     // Clear existing timer
     if (comboTimer) {
         clearTimeout(comboTimer);
@@ -1262,6 +1264,10 @@ function incrementCombo() {
 // Reset combo counter
 function resetCombo() {
     comboCount = 0;
+    
+    // Update the combo display in the DOM
+    comboDisplayElement.textContent = '0';
+    
     if (comboTimer) {
         clearTimeout(comboTimer);
         comboTimer = null;

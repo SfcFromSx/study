@@ -27,7 +27,7 @@
             
             <div id="pause-overlay" class="hidden">
                 <h2>PAUSED</h2>
-                <p>Press SPACE to resume</p>
+                <p>Press P to resume</p>
             </div>
             
             <!-- 题库选择界面 -->
@@ -72,6 +72,7 @@
                 <p>移动: 左右方向键<br>
                    射击: A, B, C, D, W (✅), E (❌)<br>
                    提交: 空格键 (😊)<br>
+                   暂停: P 键<br>
                    连击: 连续答对题目可获得连击加成!</p>
                 
                 <button id="start-button">开始游戏</button>
@@ -89,6 +90,7 @@
         <div class="stats-area">
             <div class="score-box">
                 <h3>分数: <span id="score">0</span></h3>
+                <h3>连击: <span id="combo-display">0</span></h3>
             </div>
             <div class="health-container">
                 <h3>生命值</h3>
@@ -108,9 +110,6 @@
                 </ul>
                 <p>暂停/继续: 空格键</p>
             </div>
-            
-            <!-- 右侧区域底部文字 -->
-            <div class="bottom-quote">回头是岸</div>
         </div>
     </div>
 
