@@ -1533,6 +1533,9 @@ function spawnEnemy() {
                 score += health * 500;
                 updateScore(); // Update the score display
                 
+                // 立即将游戏状态设为非活动，防止重复调用
+                gameActive = false;
+                
                 setTimeout(() => {
                     // Make sure final score element is updated with latest score
                     finalScoreElement.textContent = score;
