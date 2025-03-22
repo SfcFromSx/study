@@ -7,7 +7,7 @@
 let GAME_WIDTH = 800;
 let GAME_HEIGHT = 600;
 const PLAYER_SPEED = 5;
-const BULLET_SPEED = 3;
+const BULLET_SPEED = 6; // 从3提高到6，速度翻倍
 const ENEMY_SPEED = 0.75;
 const MAX_HEALTH = 10;
 const BULLET_TYPES = {
@@ -190,8 +190,8 @@ class Bullet {
     constructor(x, y, type) {
         this.x = x;
         this.y = y;
-        this.width = 60; // Doubled from 30 to 60
-        this.height = 60; // Doubled from 30 to 60
+        this.width = 30; // 从60缩小到30，缩小50%
+        this.height = 30; // 从60缩小到30，缩小50%
         this.speed = BULLET_SPEED;
         this.type = type;
     }
