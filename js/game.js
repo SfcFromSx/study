@@ -1674,7 +1674,7 @@ function updateComboCount() {
         
         if (isExactly20) {
             // 毕业特效 - 大型烟花
-            createFireworks(centerX, centerY, 2.5, COMBO_MESSAGES.COMBO_20);
+            createFireworks(centerX, centerY, 2.5); // 移除文本参数
             
             // 周围的小烟花 - 减少数量以提高性能
             for (let i = 0; i < 8; i++) { // 从15减少到8
@@ -1687,7 +1687,7 @@ function updateComboCount() {
         } 
         else if (isExactly10) {
             // 10连击特效
-            createFireworks(centerX, centerY, 2, COMBO_MESSAGES.COMBO_10);
+            createFireworks(centerX, centerY, 2); // 移除文本参数
             
             // 周围的小烟花 - 减少数量以提高性能
             for (let i = 0; i < 5; i++) { // 从8减少到5
@@ -1700,7 +1700,7 @@ function updateComboCount() {
         } 
         else if (isExactly5) {
             // 5连击特效
-            createFireworks(centerX, centerY, 1.5, COMBO_MESSAGES.COMBO_5);
+            createFireworks(centerX, centerY, 1.5); // 移除文本参数
             
             // 周围的小烟花 - 减少数量以提高性能
             for (let i = 0; i < 3; i++) { // 从5减少到3
