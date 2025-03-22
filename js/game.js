@@ -17,7 +17,7 @@ const BULLET_TYPES = {
     D: { key: 'f', color: '#ff9800', text: 'D' },
     TRUE: { key: 'w', color: '#4caf50', text: '✓' },
     FALSE: { key: 'e', color: '#ff5252', text: '✗' },
-    SUBMIT: { key: ' ', color: '#9c27b0', text: '😊' }
+    SUBMIT: { key: ' ', color: '#9c27b0', text: '→' }
 };
 
 // 游戏难度
@@ -717,6 +717,8 @@ function showQuestionBankScreen() {
 
 // Start the game
 function startGame() {
+    console.log('startGame called, selectedBankId:', selectedBankId);
+    
     if (!selectedBankId) {
         alert('请先选择一个题库');
         return;
@@ -1132,7 +1134,7 @@ function resumeGame() {
     if (gameActive && gamePaused) {
         gamePaused = false;
         pauseOverlay.classList.add('hidden');
-        gameLoop = requestAnimationFrame(updateGame);
+        gameLoop = setInterval(gameUpdate, 1000 / 60); // 使用setInterval而不是requestAnimationFrame
     }
 }
 
