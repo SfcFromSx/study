@@ -426,8 +426,8 @@ class Enemy {
             questionTypeText = "【单选题】";
         }
 
-        // 使用titleHeight的一半作为基准点，确保文字垂直居中在标题栏内
-        const textY = boxY + titleHeight/2 + 6; // 6是字体基线调整值
+        // 使用titleHeight的一半作为基准点，向上移动文字
+        const textY = boxY + titleHeight/2 + 2; // 从6减小到2，向上移动4px
         ctx.fillText(questionTypeText, boxX + questionWidth/2, textY);
 
         // 重置为问题文本样式
