@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+  <!-- 定义渐变和滤镜 -->
+  <defs>
+    <!-- 主体金属渐变 -->
+    <linearGradient id="shipBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1a2e" />
+      <stop offset="50%" stop-color="#16213e" />
+      <stop offset="100%" stop-color="#0f3460" />
+    </linearGradient>
+    
+    <!-- 霓虹蓝色渐变 -->
+    <linearGradient id="neonBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4361ee" />
+      <stop offset="50%" stop-color="#3a86ff" />
+      <stop offset="100%" stop-color="#00f5ff" />
+    </linearGradient>
+    
+    <!-- 霓虹粉色渐变 -->
+    <linearGradient id="neonPink" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff0080" />
+      <stop offset="50%" stop-color="#fb5607" />
+      <stop offset="100%" stop-color="#ffbe0b" />
+    </linearGradient>
+    
+    <!-- 引擎渐变 -->
+    <linearGradient id="engine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#9d4edd" />
+      <stop offset="50%" stop-color="#ff0080" />
+      <stop offset="100%" stop-color="#ff5400" />
+    </linearGradient>
+    
+    <!-- 驾驶舱渐变 -->
+    <radialGradient id="cockpit" cx="50%" cy="40%" r="50%" fx="50%" fy="40%">
+      <stop offset="0%" stop-color="#00f5ff" stop-opacity="0.8" />
+      <stop offset="70%" stop-color="#4cc9f0" stop-opacity="0.5" />
+      <stop offset="100%" stop-color="#4361ee" stop-opacity="0.3" />
+    </radialGradient>
+    
+    <!-- 发光效果滤镜 -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feFlood flood-color="#00f5ff" flood-opacity="0.7" result="glowColor" />
+      <feComposite in="glowColor" in2="blur" operator="in" result="softGlow" />
+      <feComposite in="softGlow" in2="SourceGraphic" operator="over" />
+    </filter>
+    
+    <!-- 引擎发光效果 -->
+    <filter id="engineGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feFlood flood-color="#ff0080" flood-opacity="0.8" result="glowColor" />
+      <feComposite in="glowColor" in2="blur" operator="in" result="softGlow" />
+      <feComposite in="softGlow" in2="SourceGraphic" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- 飞船主体 -->
+  <g transform="translate(50, 50) rotate(180)">
+    <!-- 引擎喷射流 -->
+    <polygon points="-6,-50 -12,-58 0,-72 12,-58 6,-50" fill="url(#engine)" filter="url(#engineGlow)" />
+    
+    <!-- 主体 -->
+    <path d="M-25,-10 L-10,-40 L10,-40 L25,-10 L20,20 L15,30 L-15,30 L-20,20 Z" fill="url(#shipBody)" stroke="#304b9e" stroke-width="1" />
+    
+    <!-- 机翼和涂装 -->
+    <path d="M-25,-10 L-35,10 L-25,25 L-20,20 Z" fill="url(#shipBody)" stroke="#304b9e" stroke-width="1" />
+    <path d="M25,-10 L35,10 L25,25 L20,20 Z" fill="url(#shipBody)" stroke="#304b9e" stroke-width="1" />
+    
+    <!-- 霓虹线条装饰 -->
+    <path d="M-25,-10 L-10,-40 L10,-40 L25,-10" fill="none" stroke="url(#neonBlue)" stroke-width="1.5" filter="url(#glow)" />
+    <path d="M-20,20 L-15,30 L15,30 L20,20" fill="none" stroke="url(#neonBlue)" stroke-width="1.5" filter="url(#glow)" />
+    <path d="M-25,-10 L-35,10 L-25,25" fill="none" stroke="url(#neonPink)" stroke-width="1.5" filter="url(#glow)" />
+    <path d="M25,-10 L35,10 L25,25" fill="none" stroke="url(#neonPink)" stroke-width="1.5" filter="url(#glow)" />
+    
+    <!-- 中间驾驶舱 -->
+    <ellipse cx="0" cy="-10" rx="8" ry="12" fill="url(#cockpit)" stroke="#4cc9f0" stroke-width="1" filter="url(#glow)" />
+    
+    <!-- 装饰线条 -->
+    <line x1="-20" y1="0" x2="20" y2="0" stroke="#4cc9f0" stroke-width="0.5" stroke-dasharray="2,1" />
+    <line x1="-15" y1="10" x2="15" y2="10" stroke="#4cc9f0" stroke-width="0.5" stroke-dasharray="2,1" />
+    <line x1="-10" y1="20" x2="10" y2="20" stroke="#4cc9f0" stroke-width="0.5" stroke-dasharray="2,1" />
+    
+    <!-- 小型发动机喷口 -->
+    <rect x="-15" y="30" width="5" height="2" fill="#ff0080" filter="url(#engineGlow)" />
+    <rect x="10" y="30" width="5" height="2" fill="#ff0080" filter="url(#engineGlow)" />
+    
+    <!-- 机翼装饰 -->
+    <line x1="-25" y1="-10" x2="-35" y2="10" stroke="url(#neonPink)" stroke-width="1" filter="url(#glow)" />
+    <line x1="25" y1="-10" x2="35" y2="10" stroke="url(#neonPink)" stroke-width="1" filter="url(#glow)" />
+  </g>
+</svg> 

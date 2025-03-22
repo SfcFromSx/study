@@ -94,14 +94,9 @@ class Player {
         
         // 加载玩家图片
         this.image = new Image();
-        this.image.src = 'assets/player.png';
-        
-        // 如果PNG加载失败，尝试加载SVG
-        this.image.onerror = () => {
-            this.image.src = 'assets/player.svg';
-        };
+        this.image.src = 'assets/player.svg';
     }
-
+    
     update() {
         // Move player based on keyboard input
         if (this.moveLeft) {
