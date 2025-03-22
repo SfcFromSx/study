@@ -908,6 +908,9 @@ function restartGame() {
 
 // Game over
 function gameOver() {
+    // 如果游戏已经结束，不再执行
+    if (!gameActive) return;
+    
     gameActive = false;
     clearInterval(gameLoop);
     
