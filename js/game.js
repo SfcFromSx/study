@@ -75,6 +75,13 @@ const questionDetailContainer = document.getElementById('question-detail-contain
 const questionDetailContent = document.querySelector('.question-detail-content');
 const closeDetailBtn = document.getElementById('close-detail-btn');
 
+// 定义里程碑连击文本常量，避免重复定义
+const COMBO_MESSAGES = {
+    COMBO_5: "5连击，太牛了！",
+    COMBO_10: "10连击，够了够了别练了！",
+    COMBO_20: "20连击！毕业！"
+};
+
 // Player class
 class Player {
     constructor() {
@@ -645,10 +652,10 @@ class Firework {
     }
     
     init() {
-        // Create particles
-        const particleCount = 20 + Math.floor(this.size * 15); // More particles for larger fireworks
+        // Create particles - 减少粒子数量以提高性能
+        const particleCount = 10 + Math.floor(this.size * 8); // 从20+15减少到10+8
         for (let i = 0; i < particleCount; i++) {
-            const speed = (1 + Math.random() * 3) * this.size;
+            const speed = (1 + Math.random() * 2) * this.size; // 降低粒子速度
             const angle = Math.random() * Math.PI * 2;
             this.particles.push({
                 x: 0,
@@ -656,7 +663,7 @@ class Firework {
                 vx: Math.cos(angle) * speed,
                 vy: Math.sin(angle) * speed,
                 alpha: 1,
-                size: (2 + Math.random() * 3) * this.size // Larger particles for bigger fireworks
+                size: (1.5 + Math.random() * 2) * this.size // 略微减小粒子尺寸
             });
         }
     }
@@ -690,30 +697,32 @@ class Firework {
         ctx.save();
         ctx.translate(this.x, this.y);
         
-        // 添加中心光晕
+        // 添加中心光晕 - 保持效果但减少复杂度
         ctx.globalAlpha = Math.min(1, this.lifespan / 30);
         ctx.fillStyle = this.color;
         ctx.shadowColor = this.color;
-        ctx.shadowBlur = 20;
+        ctx.shadowBlur = 15; // 从20减少到15
         ctx.beginPath();
-        ctx.arc(0, 0, this.size * 5, 0, Math.PI * 2);
+        ctx.arc(0, 0, this.size * 4, 0, Math.PI * 2); // 略微减小尺寸
         ctx.fill();
         
-        // 绘制粒子轨迹
-        this.particles.forEach(p => {
-            ctx.globalAlpha = p.alpha * 1.2; // 增强透明度
+        // 绘制粒子轨迹 - 每隔一个粒子绘制拖尾以提高性能
+        this.particles.forEach((p, index) => {
+            ctx.globalAlpha = p.alpha * 1.2;
             
-            // 添加辉光效果
+            // 添加辉光效果，但降低复杂度
             ctx.shadowColor = this.color;
-            ctx.shadowBlur = 10;
+            ctx.shadowBlur = 8; // 从10减少到8
             
-            // 绘制拖尾效果
-            ctx.strokeStyle = this.color;
-            ctx.lineWidth = p.size / 2;
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p.x - p.vx, p.y - p.vy);
-            ctx.stroke();
+            // 只为部分粒子添加拖尾效果
+            if (index % 2 === 0) { // 只绘制一半粒子的拖尾
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = p.size / 2;
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(p.x - p.vx, p.y - p.vy);
+                ctx.stroke();
+            }
             
             // 绘制粒子
             ctx.fillStyle = this.color;
@@ -728,9 +737,9 @@ class Firework {
             const textAlpha = Math.min(1, this.textLifespan / 60);
             ctx.globalAlpha = textAlpha;
             
-            // 添加文字阴影和发光效果
+            // 添加文字阴影和发光效果，但降低复杂度
             ctx.shadowColor = this.color;
-            ctx.shadowBlur = 20;
+            ctx.shadowBlur = 15; // 从20减少到15
             
             // 使用赛博朋克风格的字体
             ctx.font = `bold ${30 * this.size}px "Orbitron", "Rajdhani", Arial, sans-serif`;
@@ -1665,46 +1674,46 @@ function updateComboCount() {
         
         if (isExactly20) {
             // 毕业特效 - 大型烟花
-            createFireworks(centerX, centerY, 2.5, "20连击！毕业！");
+            createFireworks(centerX, centerY, 2.5, COMBO_MESSAGES.COMBO_20);
             
-            // 周围的小烟花
-            for (let i = 0; i < 15; i++) {
+            // 周围的小烟花 - 减少数量以提高性能
+            for (let i = 0; i < 8; i++) { // 从15减少到8
                 setTimeout(() => {
                     const x = Math.random() * GAME_WIDTH;
                     const y = 50 + Math.random() * 300;
-                    createFireworks(x, y, 2);
-                }, i * 100); 
+                    createFireworks(x, y, 1.5); // 降低大小以减少粒子
+                }, i * 150); // 增加间隔，减少短时间内的粒子数量
             }
         } 
         else if (isExactly10) {
             // 10连击特效
-            createFireworks(centerX, centerY, 2, "10连击，够了够了别练了！");
+            createFireworks(centerX, centerY, 2, COMBO_MESSAGES.COMBO_10);
             
-            // 周围的小烟花
-            for (let i = 0; i < 8; i++) {
+            // 周围的小烟花 - 减少数量以提高性能
+            for (let i = 0; i < 5; i++) { // 从8减少到5
                 setTimeout(() => {
                     const x = Math.random() * GAME_WIDTH;
                     const y = 80 + Math.random() * 200;
-                    createFireworks(x, y, 1.5);
-                }, i * 100);
+                    createFireworks(x, y, 1.2); // 降低大小以减少粒子
+                }, i * 150); // 增加间隔
             }
         } 
         else if (isExactly5) {
             // 5连击特效
-            createFireworks(centerX, centerY, 1.5, "5连击，太牛了！");
+            createFireworks(centerX, centerY, 1.5, COMBO_MESSAGES.COMBO_5);
             
-            // 周围的小烟花
-            for (let i = 0; i < 5; i++) {
+            // 周围的小烟花 - 减少数量以提高性能
+            for (let i = 0; i < 3; i++) { // 从5减少到3
                 setTimeout(() => {
                     const x = Math.random() * GAME_WIDTH;
                     const y = 100 + Math.random() * 150;
-                    createFireworks(x, y, 1);
-                }, i * 100);
+                    createFireworks(x, y, 0.8); // 降低大小以减少粒子
+                }, i * 150); // 增加间隔
             }
         }
         else if (comboCount > 1) {
-            // 普通连击，简单烟花
-            createFireworks(centerX, centerY, 0.5);
+            // 普通连击，简单烟花 - 减小尺寸以提高性能
+            createFireworks(centerX, centerY, 0.4); // 从0.5减少到0.4
         }
     }
 }
@@ -1805,13 +1814,13 @@ function drawComboCount() {
     let fontSize;
     
     if (comboCount === 20) {
-        comboMessage = "20连击！！！毕业！！！";
+        comboMessage = COMBO_MESSAGES.COMBO_20;
         fontSize = 80; // Largest font
     } else if (comboCount === 10) {
-        comboMessage = "10连击，够了够了别练了！";
+        comboMessage = COMBO_MESSAGES.COMBO_10;
         fontSize = 64; // Large font
     } else if (comboCount === 5) {
-        comboMessage = "5连击，太牛了！";
+        comboMessage = COMBO_MESSAGES.COMBO_5;
         fontSize = 56; // Medium-large font
     } else {
         comboMessage = `${comboCount} COMBO!`;
@@ -1821,8 +1830,8 @@ function drawComboCount() {
     const centerX = GAME_WIDTH / 2;
     const centerY = 100;
     
-    // 创建赛博朋克风格的背景效果
-    const glitchAmount = Math.sin(Date.now() / 150) * 5; // 故障效果抖动量
+    // 创建赛博朋克风格的背景效果 - 减少故障效果的幅度以提升性能
+    const glitchAmount = Math.sin(Date.now() / 200) * 3; // 从5减少到3，降低故障效果的频率和幅度
     
     // 添加故障背景
     ctx.save();
@@ -1832,8 +1841,8 @@ function drawComboCount() {
     const bgWidth = textWidth * 1.4;
     const bgHeight = fontSize * 1.6;
     
-    // 绘制背景故障效果
-    for (let i = 0; i < 3; i++) {
+    // 绘制背景故障效果 - 减少重复次数以提高性能
+    for (let i = 0; i < 2; i++) { // 从3减少到2
         const offsetX = (Math.random() - 0.5) * glitchAmount * 2;
         const offsetY = (Math.random() - 0.5) * glitchAmount * 2;
         
@@ -2183,21 +2192,25 @@ function drawCyberpunkGrid() {
     ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)'; // 青色半透明
     ctx.lineWidth = 1;
     
-    // 水平线
-    const gridSpacingY = 50;
+    // 增加网格间距以减少绘制的网格线数量
+    const gridSpacingY = 80; // 从50增加到80
+    const gridSpacingX = 80; // 从50增加到80
+    
+    // 减少单独的beginPath和stroke调用，批量处理以提高性能
+    
+    // 绘制所有水平线
+    ctx.beginPath();
     for (let y = 0; y < GAME_HEIGHT; y += gridSpacingY) {
-        ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(GAME_WIDTH, y);
-        ctx.stroke();
     }
+    ctx.stroke();
     
-    // 垂直线
-    const gridSpacingX = 50;
+    // 绘制所有垂直线
+    ctx.beginPath();
     for (let x = 0; x < GAME_WIDTH; x += gridSpacingX) {
-        ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, GAME_HEIGHT);
-        ctx.stroke();
     }
+    ctx.stroke();
 } 
