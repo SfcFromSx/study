@@ -1,16 +1,89 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="50" height="60" viewBox="0 0 50 60">
-  <!-- Ship body -->
-  <path d="M25 0 L50 55 L25 45 L0 55 Z" fill="#4c4cff" stroke="#ffffff" stroke-width="1" />
+<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50">
+  <!-- 定义渐变 -->
+  <defs>
+    <!-- 主体渐变 -->
+    <radialGradient id="brainGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#004455" />
+      <stop offset="70%" stop-color="#002233" />
+      <stop offset="100%" stop-color="#001122" />
+    </radialGradient>
+    
+    <!-- 核心发光渐变 -->
+    <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#00ffff" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#00ffcc" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#00ffcc" stop-opacity="0.1" />
+    </radialGradient>
+    
+    <!-- 外层光环渐变 -->
+    <radialGradient id="outerGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="rgba(0, 255, 204, 0.3)" />
+      <stop offset="70%" stop-color="rgba(0, 255, 204, 0.1)" />
+      <stop offset="100%" stop-color="rgba(0, 255, 204, 0)" />
+    </radialGradient>
+    
+    <!-- 添加动画效果 -->
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
   
-  <!-- Ship details -->
-  <path d="M25 10 L35 50 L25 40 L15 50 Z" fill="#7070ff" />
+  <!-- 外部光环 -->
+  <circle cx="25" cy="25" r="24" fill="url(#outerGlow)">
+    <!-- 脉动动画 -->
+    <animate attributeName="r" values="22;24;22" dur="4s" repeatCount="indefinite" />
+  </circle>
   
-  <!-- Engine glow -->
-  <circle cx="25" cy="48" r="5" fill="#ff9955" />
+  <!-- 主体大脑 -->
+  <circle cx="25" cy="25" r="20" fill="url(#brainGradient)">
+    <!-- 脉动动画 -->
+    <animate attributeName="r" values="19;20;19" dur="3s" repeatCount="indefinite" />
+  </circle>
   
-  <!-- Cockpit -->
-  <circle cx="25" cy="15" r="7" fill="#87ceeb" stroke="#ffffff" stroke-width="0.5" />
+  <!-- 神经连接 - 使用多条线表示 -->
+  <g stroke="#00ffcc" stroke-width="0.5" stroke-opacity="0.4" filter="url(#glow)">
+    <line x1="15" y1="15" x2="35" y2="30" />
+    <line x1="12" y1="25" x2="38" y2="25" />
+    <line x1="20" y1="10" x2="30" y2="40" />
+    <line x1="35" y1="15" x2="15" y2="35" />
+    
+    <!-- 动画效果 - 交替透明度 -->
+    <animate attributeName="stroke-opacity" values="0.2;0.5;0.2" dur="2s" repeatCount="indefinite" />
+  </g>
   
-  <!-- Wings -->
-  <path d="M25 20 L40 40 L35 42 L25 30 L15 42 L10 40 Z" fill="#3a3aff" stroke="#ffffff" stroke-width="0.5" />
+  <!-- 神经节点 - 主要节点 -->
+  <g fill="#00ffcc" filter="url(#glow)">
+    <circle cx="15" cy="15" r="2">
+      <animate attributeName="r" values="1.5;2.5;1.5" dur="2.5s" repeatCount="indefinite" />
+      <animate attributeName="fill-opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="35" cy="15" r="2">
+      <animate attributeName="r" values="2;1.5;2" dur="3s" repeatCount="indefinite" />
+      <animate attributeName="fill-opacity" values="0.7;1;0.7" dur="2.3s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="25" cy="10" r="1.5">
+      <animate attributeName="r" values="1;2;1" dur="2.7s" repeatCount="indefinite" />
+      <animate attributeName="fill-opacity" values="0.6;0.9;0.6" dur="2.1s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="15" cy="35" r="2">
+      <animate attributeName="r" values="1.8;2.3;1.8" dur="2.3s" repeatCount="indefinite" />
+      <animate attributeName="fill-opacity" values="0.8;1;0.8" dur="1.9s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="35" cy="35" r="1.8">
+      <animate attributeName="r" values="1.3;2.1;1.3" dur="2.9s" repeatCount="indefinite" />
+      <animate attributeName="fill-opacity" values="0.5;0.8;0.5" dur="2.5s" repeatCount="indefinite" />
+    </circle>
+    <circle cx="25" cy="40" r="1.5">
+      <animate attributeName="r" values="1.2;1.8;1.2" dur="3.1s" repeatCount="indefinite" />
+      <animate attributeName="fill-opacity" values="0.6;1;0.6" dur="1.7s" repeatCount="indefinite" />
+    </circle>
+  </g>
+  
+  <!-- 中央核心 -->
+  <circle cx="25" cy="25" r="8" fill="url(#coreGlow)" filter="url(#glow)">
+    <!-- 脉动动画 -->
+    <animate attributeName="r" values="7;9;7" dur="2s" repeatCount="indefinite" />
+    <animate attributeName="fill-opacity" values="0.7;1;0.7" dur="1.5s" repeatCount="indefinite" />
+  </circle>
 </svg> 
