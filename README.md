@@ -62,6 +62,33 @@ game/
 └── index.html     # 主游戏页面
 ```
 
+## 启动说明
+
+### 本地运行
+1. 克隆仓库到本地:
+   ```bash
+   git clone https://github.com/SfcFromSx/study.git
+   cd study
+   ```
+
+2. 使用任意HTTP服务器启动项目:
+   - 使用Python (Python 3):
+     ```bash
+     python -m http.server
+     ```
+   - 使用Node.js:
+     ```bash
+     npx serve
+     ```
+   - 或者使用VS Code的Live Server插件
+
+3. 在浏览器中访问:
+   - 如果使用Python: http://localhost:8000
+   - 如果使用npx serve: http://localhost:5000 (查看终端输出获取确切URL)
+
+### 在线体验
+也可以直接访问GitHub Pages上的在线版本：https://sfcfromsx.github.io/study/
+
 ## 免责声明
 
 本项目仅供学习和教育目的使用，不得用于商业用途。所有题库内容的版权归原作者所有。

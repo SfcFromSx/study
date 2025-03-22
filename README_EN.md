@@ -62,6 +62,33 @@ game/
 └── index.html     # Main game page
 ```
 
+## Startup Instructions
+
+### Running Locally
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/SfcFromSx/study.git
+   cd study
+   ```
+
+2. Start the project using any HTTP server:
+   - Using Python (Python 3):
+     ```bash
+     python -m http.server
+     ```
+   - Using Node.js:
+     ```bash
+     npx serve
+     ```
+   - Or use VS Code's Live Server extension
+
+3. Access in your browser:
+   - If using Python: http://localhost:8000
+   - If using npx serve: http://localhost:5000 (check terminal output for exact URL)
+
+### Online Demo
+You can also directly access the online version on GitHub Pages: https://sfcfromsx.github.io/study/
+
 ## Disclaimer
 
 This project is for learning and educational purposes only and may not be used for commercial purposes. All question bank content copyrights belong to their original authors.
