@@ -1175,8 +1175,9 @@ function gameOver() {
     // 如果游戏已经结束，不再执行
     if (!gameActive) return;
     
-    console.log("Game over - initializing review mode...");
+    console.log("游戏结束");
     
+    // 设置游戏状态
     gameActive = false;
     clearInterval(gameLoop);
     
@@ -1200,13 +1201,7 @@ function gameOver() {
     // Update final score display to match the format of the in-game score
     finalScoreElement.textContent = score;
     
-    // Add game-over class to enable stat-box hover effect
-    document.querySelector('.question-area').classList.add('game-over');
-    
-    // Enable question review by making question blocks clickable
-    console.log("Enabling question review...", currentQuestions.length, "questions available");
-    enableQuestionReview();
-    
+    // 显示游戏结束界面
     gameOverScreen.classList.remove('hidden');
 }
 
@@ -1609,7 +1604,10 @@ function renderQuestionStats() {
     questionStats.forEach((status, index) => {
         const statBox = document.createElement('div');
         statBox.className = `stat-box ${status}`;
-        statBox.setAttribute('data-index', index.toString());
+        
+        // 确保设置data-index属性且值为字符串
+        statBox.setAttribute('data-index', String(index));
+        
         statBox.textContent = index + 1;
         
         // Add tooltip showing question number
@@ -2164,206 +2162,6 @@ window.addEventListener('load', function() {
 // Initialize the game when the page loads
 window.addEventListener('load', initGame);
 
-// Enable question review functionality after game over
-function enableQuestionReview() {
-    // First, hide the question detail container
-    if (questionDetailContainer) {
-        questionDetailContainer.classList.add('hidden');
-    }
-    
-    // Clear current stat boxes and rebuild them with proper event handlers
-    renderQuestionStats();
-    
-    // After rendering the updated stats, attach new click handlers
-    const statBoxes = document.querySelectorAll('.stat-box');
-    console.log(`Found ${statBoxes.length} stat boxes for question review`);
-    
-    // Remove existing handlers by cloning and replacing
-    statBoxes.forEach((box, index) => {
-        const newBox = box.cloneNode(true);
-        
-        // Ensure it looks clickable
-        newBox.style.cursor = 'pointer';
-        
-        // Add a direct onclick handler
-        newBox.onclick = function(e) {
-            e.stopPropagation();
-            console.log(`Clicked on question #${index + 1}`);
-            showQuestionDetail(index);
-        };
-        
-        // Replace the original with the clone
-        if (box.parentNode) {
-            box.parentNode.replaceChild(newBox, box);
-        }
-    });
-    
-    // Ensure the close button also works
-    if (closeDetailBtn) {
-        const newCloseBtn = closeDetailBtn.cloneNode(true);
-        newCloseBtn.onclick = function(e) {
-            e.stopPropagation();
-            questionDetailContainer.classList.add('hidden');
-        };
-        
-        if (closeDetailBtn.parentNode) {
-            closeDetailBtn.parentNode.replaceChild(newCloseBtn, closeDetailBtn);
-        }
-    }
-    
-    // Add special styles to enhance the game-over appearance
-    document.querySelectorAll('.stat-box').forEach(box => {
-        // Make boxes more prominent when hoverable
-        box.addEventListener('mouseenter', function() {
-            this.style.transform = 'scale(1.1)';
-            this.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.5)';
-        });
-        
-        box.addEventListener('mouseleave', function() {
-            this.style.transform = 'scale(1)';
-            this.style.boxShadow = 'none';
-        });
-    });
-    
-    console.log("Question review functionality enabled");
-}
-
-// Display question details when a stat box is clicked
-function showQuestionDetail(questionIndex) {
-    console.log(`Showing details for question ${questionIndex + 1}`);
-    
-    // Sanity check
-    if (questionIndex < 0 || questionIndex >= currentQuestions.length) {
-        console.error(`Invalid question index: ${questionIndex}, max: ${currentQuestions.length - 1}`);
-        return;
-    }
-    
-    // Get the question
-    const question = currentQuestions[questionIndex];
-    if (!question) {
-        console.error(`Question not found for index ${questionIndex}`);
-        return;
-    }
-    
-    // Create HTML for the question detail
-    let html = `<div class="question-text">${questionIndex + 1}. ${question.question}</div>`;
-    
-    try {
-        // Add options based on question type
-        if (question.options) {
-            html += '<div class="question-options">';
-            
-            // Determine if it's a multi-select question
-            const isMultiSelect = question.type === 'multiSelect';
-            
-            if (isMultiSelect) {
-                // For multi-select questions
-                const correctAnswers = question.correctAnswers || [];
-                
-                question.options.forEach((option, idx) => {
-                    const letter = ['A', 'B', 'C', 'D'][idx];
-                    const isCorrect = correctAnswers.includes(letter);
-                    
-                    const optionClass = isCorrect ? 'option-correct' : '';
-                    
-                    html += `
-                        <div class="question-option ${optionClass}">
-                            <div class="option-letter">${letter}.</div>
-                            <div class="option-text">${option}</div>
-                        </div>
-                    `;
-                });
-                
-                // Add the correct answers
-                html += `
-                    <div class="question-answer answer-correct">
-                        正确答案: ${correctAnswers.join(', ')}
-                    </div>
-                `;
-            } else {
-                // For single-choice questions
-                const correctAnswer = question.correctAnswer || '';
-                
-                question.options.forEach((option, idx) => {
-                    const letter = ['A', 'B', 'C', 'D'][idx];
-                    const isCorrect = letter === correctAnswer;
-                    
-                    const optionClass = isCorrect ? 'option-correct' : '';
-                    
-                    html += `
-                        <div class="question-option ${optionClass}">
-                            <div class="option-letter">${letter}.</div>
-                            <div class="option-text">${option}</div>
-                        </div>
-                    `;
-                });
-                
-                // Add the correct answer
-                html += `
-                    <div class="question-answer answer-correct">
-                        正确答案: ${correctAnswer}
-                    </div>
-                `;
-            }
-            
-            html += '</div>';
-        } else {
-            // True/False question
-            const correctAnswer = question.correctAnswer === 'TRUE' ? '是' : '否';
-            
-            html += `
-                <div class="question-options">
-                    <div class="question-option ${question.correctAnswer === 'TRUE' ? 'option-correct' : ''}">
-                        <div class="option-letter">✓</div>
-                        <div class="option-text">是</div>
-                    </div>
-                    <div class="question-option ${question.correctAnswer === 'FALSE' ? 'option-correct' : ''}">
-                        <div class="option-letter">✗</div>
-                        <div class="option-text">否</div>
-                    </div>
-                </div>
-                <div class="question-answer answer-correct">
-                    正确答案: ${correctAnswer}
-                </div>
-            `;
-        }
-        
-        // Add user's answer status
-        const userAnswerStatus = questionStats[questionIndex];
-        let userAnswerHtml = '';
-        
-        if (userAnswerStatus === 'correct') {
-            userAnswerHtml = '<div class="question-answer answer-correct">您的回答: 正确 ✓</div>';
-        } else if (userAnswerStatus === 'wrong') {
-            userAnswerHtml = '<div class="question-answer answer-incorrect">您的回答: 错误 ✗</div>';
-        } else {
-            userAnswerHtml = '<div class="question-answer">您未回答此题</div>';
-        }
-        
-        html += userAnswerHtml;
-        
-        // Update the container and show it
-        if (questionDetailContent) {
-            questionDetailContent.innerHTML = html;
-            questionDetailContainer.classList.remove('hidden');
-            
-            // Make sure it's visible within viewport
-            questionDetailContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            
-            console.log("Question detail displayed successfully");
-        } else {
-            console.error("Question detail content element not found");
-        }
-    } catch (error) {
-        console.error("Error displaying question detail:", error);
-    }
-}
-
-// Add event handler for the close button
-closeDetailBtn.addEventListener('click', () => {
-    questionDetailContainer.classList.add('hidden');
-});
-
 // 绘制赛博朋克网格背景
 function drawCyberpunkGrid() {
     // 网格线颜色
@@ -2391,4 +2189,4 @@ function drawCyberpunkGrid() {
         ctx.lineTo(x, GAME_HEIGHT);
     }
     ctx.stroke();
-} 
+}
