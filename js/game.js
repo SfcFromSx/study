@@ -203,18 +203,37 @@ class Bullet {
     draw() {
         const bulletInfo = BULLET_TYPES[this.type];
         
-        // Draw bullet background (circle)
+        // 绘制子弹光晕效果
+        ctx.shadowColor = bulletInfo.color;
+        ctx.shadowBlur = 15;
+        
+        // 绘制子弹外发光环
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+        ctx.beginPath();
+        ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2 + 5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 绘制子弹主体
         ctx.fillStyle = bulletInfo.color;
         ctx.beginPath();
         ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 2, 0, Math.PI * 2);
         ctx.fill();
         
-        // Draw bullet text
-        ctx.fillStyle = 'white';
-        ctx.font = 'bold 36px Arial, sans-serif'; // Increased from 20px to 36px for larger bullets
+        // 添加内部发光核心
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width / 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 绘制子弹文字
+        ctx.fillStyle = '#000000'; // 黑色文字更醒目
+        ctx.font = 'bold 36px "Orbitron", "Rajdhani", Arial, sans-serif'; // 使用更科幻的字体
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(bulletInfo.text, this.x + this.width / 2, this.y + this.height / 2);
+        
+        // 重置阴影效果
+        ctx.shadowBlur = 0;
     }
 
     isOffScreen() {
@@ -339,18 +358,18 @@ class Enemy {
         const boxX = Math.max(5, Math.min(GAME_WIDTH - questionWidth - 5, this.x + this.width / 2 - questionWidth / 2));
         const boxY = Math.max(5, this.y - boxHeight - 10);
         
-        // 半透明背景 - 赛博朋克风格
-        ctx.fillStyle = 'rgba(10, 5, 40, 0.75)'; // 深蓝紫色半透明背景
+        // 半透明背景 - 增加透明度（降低不透明度）
+        ctx.fillStyle = 'rgba(10, 5, 40, 0.4)'; // 由0.75改为0.4，增加透明度
         ctx.fillRect(boxX, boxY, questionWidth, boxHeight);
         
-        // 添加霓虹边框
-        ctx.strokeStyle = this.color;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(boxX, boxY, questionWidth, boxHeight);
+        // 移除边框代码
+        // ctx.strokeStyle = this.color;
+        // ctx.lineWidth = 2;
+        // ctx.strokeRect(boxX, boxY, questionWidth, boxHeight);
         
-        // 添加内发光效果
+        // 保留发光效果
         ctx.shadowColor = this.color;
-        ctx.shadowBlur = 6;
+        ctx.shadowBlur = 8; // 稍微增强发光效果
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 0;
         
@@ -561,38 +580,69 @@ class Firework {
         ctx.save();
         ctx.translate(this.x, this.y);
         
-        // Draw particles
+        // 添加中心光晕
+        ctx.globalAlpha = Math.min(1, this.lifespan / 30);
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 20;
+        ctx.beginPath();
+        ctx.arc(0, 0, this.size * 5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // 绘制粒子轨迹
         this.particles.forEach(p => {
-            ctx.globalAlpha = p.alpha;
+            ctx.globalAlpha = p.alpha * 1.2; // 增强透明度
+            
+            // 添加辉光效果
+            ctx.shadowColor = this.color;
+            ctx.shadowBlur = 10;
+            
+            // 绘制拖尾效果
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = p.size / 2;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p.x - p.vx, p.y - p.vy);
+            ctx.stroke();
+            
+            // 绘制粒子
             ctx.fillStyle = this.color;
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
             ctx.fill();
         });
         
-        // Draw text if provided and text lifespan is still active
+        // 绘制文字，添加更多赛博朋克风格
         if (this.text && this.textLifespan > 0) {
-            // Calculate text alpha based on remaining text lifespan
+            // 计算文字透明度
             const textAlpha = Math.min(1, this.textLifespan / 60);
             ctx.globalAlpha = textAlpha;
-            ctx.font = `bold ${30 * this.size}px Arial`;
+            
+            // 添加文字阴影和发光效果
+            ctx.shadowColor = this.color;
+            ctx.shadowBlur = 20;
+            
+            // 使用赛博朋克风格的字体
+            ctx.font = `bold ${30 * this.size}px "Orbitron", "Rajdhani", Arial, sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillStyle = 'white';
             
-            // Text shadow for better visibility
-            ctx.shadowColor = this.color;
-            ctx.shadowBlur = 10;
-            ctx.shadowOffsetX = 2;
-            ctx.shadowOffsetY = 2;
+            // 绘制辉光背景
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            const textWidth = ctx.measureText(this.text).width;
+            ctx.fillRect(-textWidth/2 - 10, -20, textWidth + 20, 40);
             
-            // Draw text in the center of the explosion
+            // 绘制文字边框
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(-textWidth/2 - 10, -20, textWidth + 20, 40);
+            
+            // 绘制文字
+            ctx.fillStyle = '#ffffff';
             ctx.fillText(this.text, 0, 0);
             
-            // Reset shadow
+            // 重置阴影
             ctx.shadowBlur = 0;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
         }
         
         ctx.restore();
@@ -1002,15 +1052,13 @@ function gameUpdate() {
         ctx.fillStyle = 'rgba(5, 0, 20, 0.45)'; // 深紫色半透明叠加
         ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         
-        // 添加赛博朋克视觉效果 - 网格线
-        drawCyberpunkGrid();
+        // 移除网格线绘制调用
     } else {
         // 如果图片未加载完成，使用纯色背景作为备选
         ctx.fillStyle = '#0a0030'; // 深紫蓝色背景
         ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
         
-        // 绘制网格线作为背景
-        drawCyberpunkGrid();
+        // 移除网格线绘制调用
     }
     
     if (!gameActive) return;
