@@ -399,24 +399,10 @@ class Enemy {
         // 添加题目标题的赛博朋克风格
         ctx.save();
         
-        // 绘制题目标题背景条
+        // 绘制题目标题背景条 - 完全替换原有实现
         const titleHeight = 30;
-        const titleGradient = ctx.createLinearGradient(boxX, boxY, boxX + questionWidth, boxY);
-        titleGradient.addColorStop(0, 'rgba(0, 0, 0, 0.8)');
-        titleGradient.addColorStop(0.5, 'rgba(20, 10, 60, 0.8)');
-        titleGradient.addColorStop(1, 'rgba(0, 0, 0, 0.8)');
-        
-        ctx.fillStyle = titleGradient;
-        ctx.fillRect(boxX, boxY, questionWidth, titleHeight);
-        
-        // 绘制标题文字
-        ctx.font = 'bold 18px "Orbitron", "Rajdhani", "Blender Pro", Arial, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = this.color;
-        ctx.shadowColor = this.color;
-        ctx.shadowBlur = 10;
 
-        // 获取问题类型
+        // 创建静态的题目类型标题
         let questionTypeText = "";
         if (question.type === 'multiSelect') {
             questionTypeText = "【多选题】";
@@ -426,12 +412,30 @@ class Enemy {
             questionTypeText = "【单选题】";
         }
 
-        // 使用titleHeight的一半作为基准点，向上移动文字
-        const textY = boxY + titleHeight/2 + 2; // 从6减小到2，向上移动4px
+        // 使用固定样式和单一渲染方法绘制标题
+        ctx.fillStyle = 'rgba(10, 5, 40, 0.8)'; // 固定的背景色
+        ctx.fillRect(boxX, boxY, questionWidth, titleHeight);
+
+        // 添加霓虹边框，提高可见性
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(boxX, boxY, questionWidth, titleHeight);
+
+        // 文字绘制使用固定样式和位置
+        ctx.font = 'bold 18px "Orbitron", "Rajdhani", "Blender Pro", Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle'; // 使用middle确保垂直居中
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 10;
+
+        // 固定位置，始终在标题栏中央
+        const textY = boxY + titleHeight/2;
         ctx.fillText(questionTypeText, boxX + questionWidth/2, textY);
 
         // 重置为问题文本样式
         ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic'; // 重置为默认基线
         ctx.restore();
         
         // 绘制题目文本
