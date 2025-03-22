@@ -426,8 +426,9 @@ class Enemy {
             questionTypeText = "【单选题】";
         }
 
-        // 绘制问题类型文本替代原来的QUESTION #X
-        ctx.fillText(questionTypeText, boxX + questionWidth/2, boxY + 16);
+        // 使用titleHeight的一半作为基准点，确保文字垂直居中在标题栏内
+        const textY = boxY + titleHeight/2 + 6; // 6是字体基线调整值
+        ctx.fillText(questionTypeText, boxX + questionWidth/2, textY);
 
         // 重置为问题文本样式
         ctx.textAlign = 'left';
