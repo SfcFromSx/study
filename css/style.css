@@ -152,9 +152,18 @@ body {
 
 .score-box span {
     font-size: 32px;
-    color: #ffff00;
+    color: #4caf50;
     font-weight: bold;
 }
+
+/* Combo display styling */
+#combo-display {
+    color: #4caf50;
+    text-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+    transition: all 0.3s ease;
+}
+
+/* Change color based on combo count using JS would be more dynamic */
 
 /* 垂直文字样式 */
 .vertical-text {
@@ -247,6 +256,13 @@ body {
     border-radius: 10px;
     text-align: center;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Game over screen specific styling */
+#final-score {
+    font-size: 32px;
+    color: #4caf50;
+    font-weight: bold;
 }
 
 button {

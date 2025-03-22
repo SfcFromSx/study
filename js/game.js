@@ -43,8 +43,9 @@ let isInvincible = false;
 let gameLoop;
 let questionStats = []; // For tracking question status
 let comboCount = 0; // 连击计数
-let comboTimer = null; // 连击计时器
 let fireworks = []; // 烟花特效数组
+let comboDisplayTimer = null; // Timer for combo display
+let shouldShowComboText = false; // Flag to control combo text display
 
 // 题库和难度相关变量
 let selectedBankId = null;
@@ -471,13 +472,15 @@ class Enemy {
 
 // Firework class for special effects
 class Firework {
-    constructor(x, y, color, size = 1) {
+    constructor(x, y, color, size = 1, text = null) {
         this.x = x;
         this.y = y;
         this.particles = [];
         this.color = color || this.getRandomColor();
         this.lifespan = 60; // frames
         this.size = size; // Size multiplier
+        this.text = text; // Optional text to display
+        this.textLifespan = text ? 60 : 0; // Text disappears after 1 second (60 frames at 60fps)
         this.init();
     }
     
@@ -510,6 +513,11 @@ class Firework {
     update() {
         this.lifespan--;
         
+        // Update text lifespan separately
+        if (this.textLifespan > 0) {
+            this.textLifespan--;
+        }
+        
         this.particles.forEach(p => {
             p.x += p.vx;
             p.y += p.vy;
@@ -521,6 +529,7 @@ class Firework {
         ctx.save();
         ctx.translate(this.x, this.y);
         
+        // Draw particles
         this.particles.forEach(p => {
             ctx.globalAlpha = p.alpha;
             ctx.fillStyle = this.color;
@@ -528,6 +537,31 @@ class Firework {
             ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
             ctx.fill();
         });
+        
+        // Draw text if provided and text lifespan is still active
+        if (this.text && this.textLifespan > 0) {
+            // Calculate text alpha based on remaining text lifespan
+            const textAlpha = Math.min(1, this.textLifespan / 60);
+            ctx.globalAlpha = textAlpha;
+            ctx.font = `bold ${30 * this.size}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'white';
+            
+            // Text shadow for better visibility
+            ctx.shadowColor = this.color;
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            
+            // Draw text in the center of the explosion
+            ctx.fillText(this.text, 0, 0);
+            
+            // Reset shadow
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+        }
         
         ctx.restore();
     }
@@ -748,12 +782,25 @@ function startGame() {
         enemies = [];
         fireworks = [];
         comboCount = 0;
+        shouldShowComboText = false;
         currentQuestionIndex = 0; // 重置当前题目索引
         shieldCount = 0;
         isInvincible = false;
         
+        // Clear any existing combo display timer
+        if (comboDisplayTimer) {
+            clearTimeout(comboDisplayTimer);
+            comboDisplayTimer = null;
+        }
+        
         // Reset UI displays
-        if (comboDisplayElement) comboDisplayElement.textContent = '0';
+        if (comboDisplayElement) {
+            comboDisplayElement.textContent = '0';
+            // Reset combo display styling with green color
+            comboDisplayElement.style.color = '#4caf50';
+            comboDisplayElement.style.fontSize = '32px'; 
+            comboDisplayElement.style.textShadow = '0 0 5px rgba(76, 175, 80, 0.5)';
+        }
         
         // Hide start screen and pause overlay
         startScreen.classList.add('hidden');
@@ -801,7 +848,27 @@ function restartGame() {
 function gameOver() {
     gameActive = false;
     clearInterval(gameLoop);
+    
+    // Clear any combo display timers
+    if (comboDisplayTimer) {
+        clearTimeout(comboDisplayTimer);
+        comboDisplayTimer = null;
+    }
+    shouldShowComboText = false;
+    
+    // Reset combo (visually)
+    comboCount = 0;
+    if (comboDisplayElement) {
+        comboDisplayElement.textContent = '0';
+        updateComboDisplayColor();
+    }
+    
+    // Make sure final score is updated before displaying
+    updateScore();
+    
+    // Update final score display to match the format of the in-game score
     finalScoreElement.textContent = score;
+    
     gameOverScreen.classList.remove('hidden');
 }
 
@@ -849,9 +916,22 @@ function gameUpdate() {
         fw.draw();
     });
     
-    // Draw combo count if active
-    if (comboCount > 1) {
-        drawComboCount();
+    // Draw combo count if active and should be shown
+    // Special styling for exact milestone combos (5, 10, 20)
+    if (shouldShowComboText) {
+        // For milestone combos, show the special text
+        if (comboCount === 5 || comboCount === 10 || comboCount === 20) {
+            drawComboCount();
+        } 
+        // For other combo counts, show a simpler indicator
+        else if (comboCount > 1) {
+            // Draw a simpler combo indicator for non-milestone combos
+            ctx.font = 'bold 32px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#4caf50'; // Use consistent green color
+            ctx.fillText(`${comboCount} COMBO!`, GAME_WIDTH / 2, 100);
+        }
     }
     
     // Update enemies
@@ -873,15 +953,15 @@ function gameUpdate() {
                     score += 100 * (enemy.shields + 1); // More points for shielded enemies
                     updateScore();
                     
-                    // Increment combo and refresh timer
-                    incrementCombo();
-                    
-                    // Create fireworks for enemy destruction
-                    createFireworks(enemy.x + enemy.width/2, enemy.y);
-                    
-                    // Update question stats
+                    // Update question stats for correct answer
                     questionStats[enemy.questionIndex] = 'correct';
-                    renderQuestionStats();
+                    renderQuestionStats(); // This will update the combo count based on consecutive correct answers
+                    
+                    // Create a small firework at enemy's position for destruction
+                    // But only if not at a milestone combo (those have their own effects)
+                    if (comboCount !== 5 && comboCount !== 10 && comboCount !== 20) {
+                        createFireworks(enemy.x + enemy.width/2, enemy.y, 0.8);
+                    }
                     
                     // Remove bullet
                     bullets.splice(i, 1);
@@ -914,12 +994,9 @@ function gameUpdate() {
                         }
                         bullets.splice(i, 1);
                         
-                        // Reset combo on wrong answer
-                        resetCombo();
-                        
-                        // Update question stats
+                        // Update question stats for wrong answer
                         questionStats[enemy.questionIndex] = 'wrong';
-                        renderQuestionStats();
+                        renderQuestionStats(); // This will update the combo count
                         
                         // Check if player gets invincible
                         shieldCount++;
@@ -952,12 +1029,9 @@ function gameUpdate() {
                 }
             }
             
-            // Reset combo when enemy passes bottom
-            resetCombo();
-            
-            // Update question stats
+            // Update question stats for enemy passing bottom
             questionStats[enemy.questionIndex] = 'wrong';
-            renderQuestionStats();
+            renderQuestionStats(); // This will update the combo count
             
             continue; // Skip adding this enemy to remainingEnemies
         }
@@ -1003,9 +1077,13 @@ function spawnEnemy() {
         if (!unansweredExists) {
             // 所有题目已回答，游戏胜利
             if (health > 0) {
-                score += health * 500; // 奖励剩余生命值
-                updateScore();
+                // 奖励剩余生命值
+                score += health * 500;
+                updateScore(); // Update the score display
+                
                 setTimeout(() => {
+                    // Make sure final score element is updated with latest score
+                    finalScoreElement.textContent = score;
                     alert(`恭喜！您完成了所有题目！最终得分：${score}`);
                     gameOver();
                 }, 500);
@@ -1042,7 +1120,7 @@ function updateHealth() {
     }
 }
 
-// Render question statistics in the left panel
+// Update question statistics in the left panel
 function renderQuestionStats() {
     statsContainerElement.innerHTML = '';
     
@@ -1106,6 +1184,123 @@ function renderQuestionStats() {
     `;
     
     statsContainerElement.appendChild(statsCounter);
+    
+    // Update combo counter based on consecutive correct answers at the end
+    // This ensures the combo count represents consecutive green boxes
+    updateComboCount();
+}
+
+// Calculate and update current combo based on consecutive correct answers at the end
+function updateComboCount() {
+    // Only count consecutive correct answers at the end
+    let currentCombo = 0;
+    
+    // Start from the last question that has a result (correct or wrong)
+    let lastAnsweredIndex = -1;
+    for (let i = questionStats.length - 1; i >= 0; i--) {
+        if (questionStats[i] !== 'unanswered') {
+            lastAnsweredIndex = i;
+            break;
+        }
+    }
+    
+    // If no questions have been answered yet, combo is 0
+    if (lastAnsweredIndex === -1) {
+        comboCount = 0;
+        comboDisplayElement.textContent = '0';
+        updateComboDisplayColor();
+        return;
+    }
+    
+    // Count consecutive correct answers backwards from the last answered question
+    for (let i = lastAnsweredIndex; i >= 0; i--) {
+        if (questionStats[i] === 'correct') {
+            currentCombo++;
+        } else {
+            // Break the count on the first non-correct answer
+            break;
+        }
+    }
+    
+    // Update combo count if it has changed
+    if (currentCombo !== comboCount) {
+        // Store the old count to detect exact milestone transitions
+        const oldCount = comboCount;
+        
+        // Update combo count
+        comboCount = currentCombo;
+        comboDisplayElement.textContent = comboCount;
+        updateComboDisplayColor();
+        
+        // Check for exact milestone achievements (not ranges)
+        const isExactly5 = comboCount === 5;
+        const isExactly10 = comboCount === 10;
+        const isExactly20 = comboCount === 20;
+        
+        // Only show special text and effects for exact milestone numbers
+        const isAtMilestone = isExactly5 || isExactly10 || isExactly20;
+        
+        // Show combo text based on milestone
+        shouldShowComboText = (comboCount > 0);
+        
+        // Clear any existing timer
+        if (comboDisplayTimer) {
+            clearTimeout(comboDisplayTimer);
+        }
+        
+        // Set a new timer to hide the combo text after 1 second
+        comboDisplayTimer = setTimeout(() => {
+            shouldShowComboText = false;
+        }, 1000);
+        
+        // 只在这一处触发特殊烟花效果，避免重复
+        const centerX = GAME_WIDTH / 2;
+        const centerY = 150;
+        
+        if (isExactly20) {
+            // 毕业特效 - 大型烟花
+            createFireworks(centerX, centerY, 2.5, "20连击！毕业！");
+            
+            // 周围的小烟花
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * GAME_WIDTH;
+                    const y = 50 + Math.random() * 300;
+                    createFireworks(x, y, 2);
+                }, i * 100); 
+            }
+        } 
+        else if (isExactly10) {
+            // 10连击特效
+            createFireworks(centerX, centerY, 2, "10连击，够了够了别练了！");
+            
+            // 周围的小烟花
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * GAME_WIDTH;
+                    const y = 80 + Math.random() * 200;
+                    createFireworks(x, y, 1.5);
+                }, i * 100);
+            }
+        } 
+        else if (isExactly5) {
+            // 5连击特效
+            createFireworks(centerX, centerY, 1.5, "5连击，太牛了！");
+            
+            // 周围的小烟花
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * GAME_WIDTH;
+                    const y = 100 + Math.random() * 150;
+                    createFireworks(x, y, 1);
+                }, i * 100);
+            }
+        }
+        else if (comboCount > 1) {
+            // 普通连击，简单烟花
+            createFireworks(centerX, centerY, 0.5);
+        }
+    }
 }
 
 // Handle keyboard input
@@ -1155,6 +1350,12 @@ function pauseGame() {
         if (gameLoop) {
             clearInterval(gameLoop);
         }
+        
+        // Pause combo display timer by hiding the text during pause
+        if (shouldShowComboText) {
+            // We'll store that we had an active timer, but hide the text during pause
+            shouldShowComboText = false;
+        }
     }
 }
 
@@ -1164,6 +1365,21 @@ function resumeGame() {
         gamePaused = false;
         pauseOverlay.classList.add('hidden');
         gameLoop = setInterval(gameUpdate, 1000 / 60); // 使用setInterval而不是requestAnimationFrame
+        
+        // If a combo was active, restart a brief display
+        if (comboCount > 1) {
+            shouldShowComboText = true;
+            
+            // Clear any existing timer
+            if (comboDisplayTimer) {
+                clearTimeout(comboDisplayTimer);
+            }
+            
+            // Set a new timer to hide the combo text after 0.5 seconds (after resuming)
+            comboDisplayTimer = setTimeout(() => {
+                shouldShowComboText = false;
+            }, 500);
+        }
     }
 }
 
@@ -1178,17 +1394,17 @@ function togglePause() {
 
 // Function to draw combo count with large text
 function drawComboCount() {
-    // Determine message based on combo count
+    // Determine message based on combo count - only special messages at exact milestones
     let comboMessage;
     let fontSize;
     
-    if (comboCount >= 20) {
+    if (comboCount === 20) {
         comboMessage = "20连击！！！毕业！！！";
         fontSize = 80; // Largest font
-    } else if (comboCount >= 10) {
+    } else if (comboCount === 10) {
         comboMessage = "10连击，够了够了别练了！";
         fontSize = 64; // Large font
-    } else if (comboCount >= 5) {
+    } else if (comboCount === 5) {
         comboMessage = "5连击，太牛了！";
         fontSize = 56; // Medium-large font
     } else {
@@ -1206,23 +1422,12 @@ function drawComboCount() {
     ctx.shadowOffsetX = 3;
     ctx.shadowOffsetY = 3;
     
-    // Determine color based on combo size
-    let comboColor;
-    if (comboCount >= 20) {
-        comboColor = '#ff00ff'; // Magenta for 20+
-    } else if (comboCount >= 10) {
-        comboColor = '#ff0000'; // Red for 10+
-    } else if (comboCount >= 5) {
-        comboColor = '#ff9900'; // Orange for 5+
-    } else if (comboCount >= 3) {
-        comboColor = '#ffff00'; // Yellow for 3+
-    } else {
-        comboColor = '#ffffff'; // White for 2
-    }
+    // Use consistent green color for all combo counts
+    const comboColor = '#4caf50'; // Match the color used for correct answers
     
-    // Add pulsing effect for high combos
+    // Add pulsing effect for high combos (only at milestones)
     let scale = 1.0;
-    if (comboCount >= 5) {
+    if (comboCount === 5 || comboCount === 10 || comboCount === 20) {
         scale = 1.0 + 0.05 * Math.sin(Date.now() / 100);
     }
     
@@ -1240,74 +1445,36 @@ function drawComboCount() {
     ctx.shadowOffsetY = 0;
 }
 
-// Increment combo counter
-function incrementCombo() {
-    comboCount++;
+// Update combo display color based on combo count
+function updateComboDisplayColor() {
+    if (!comboDisplayElement) return;
     
-    // Update the combo display in the DOM
-    comboDisplayElement.textContent = comboCount;
+    // Use consistent green color (same as correct answers) for all combo counts
+    const greenColor = '#4caf50'; // Match the color used for correct answers
     
-    // Clear existing timer
-    if (comboTimer) {
-        clearTimeout(comboTimer);
-    }
+    // Apply the color
+    comboDisplayElement.style.color = greenColor;
     
-    // Set timer to reset combo after 3 seconds
-    comboTimer = setTimeout(() => {
-        resetCombo();
-    }, 3000);
-    
-    // Create special effects for milestone combos
-    if (comboCount === 20) {
-        // Graduation celebration - massive fireworks display
-        for (let i = 0; i < 20; i++) {
-            setTimeout(() => {
-                const x = Math.random() * GAME_WIDTH;
-                const y = 50 + Math.random() * 300;
-                createFireworks(x, y, 2);
-            }, i * 100); // Staggered fireworks for dramatic effect
-        }
-    }
-    else if (comboCount === 10) {
-        // Impressive milestone - big fireworks
-        for (let i = 0; i < 10; i++) {
-            const x = Math.random() * GAME_WIDTH;
-            const y = 80 + Math.random() * 200;
-            createFireworks(x, y, 2);
-        }
-    }
-    else if (comboCount === 5) {
-        // First milestone - medium fireworks
-        for (let i = 0; i < 7; i++) {
-            const x = Math.random() * GAME_WIDTH;
-            const y = 100 + Math.random() * 150;
-            createFireworks(x, y);
-        }
-    }
-    else if (comboCount > 1) {
-        // Regular fireworks for any combo
-        const x = GAME_WIDTH / 2 + (Math.random() * 200 - 100);
-        const y = 120;
-        createFireworks(x, y);
-    }
-}
-
-// Reset combo counter
-function resetCombo() {
-    comboCount = 0;
-    
-    // Update the combo display in the DOM
-    comboDisplayElement.textContent = '0';
-    
-    if (comboTimer) {
-        clearTimeout(comboTimer);
-        comboTimer = null;
+    // Add animation effect ONLY for exact milestone combos
+    if (comboCount === 5 || comboCount === 10 || comboCount === 20) {
+        comboDisplayElement.style.fontSize = '36px'; // Temporarily make it larger
+        comboDisplayElement.style.textShadow = `0 0 10px ${greenColor}`; // Stronger glow
+        
+        // Reset after animation
+        setTimeout(() => {
+            comboDisplayElement.style.fontSize = '32px'; // Back to normal size
+            comboDisplayElement.style.textShadow = `0 0 5px ${greenColor}`; // Normal glow
+        }, 500);
     }
 }
 
 // Create fireworks at specified position
-function createFireworks(x, y, size = 1) {
-    if (size >= 2) {
+function createFireworks(x, y, size = 1, text = null) {
+    if (text) {
+        // For text fireworks (milestone combos), create a single firework with text
+        fireworks.push(new Firework(x, y, null, size, text));
+    }
+    else if (size >= 2) {
         // For larger fireworks, create multiple colors
         for (let i = 0; i < size; i++) {
             const offsetX = (Math.random() - 0.5) * 30 * size;
