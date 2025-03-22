@@ -424,12 +424,8 @@ class Enemy {
         this.selectedAnswers = [];
         
         // Determine color based on question type - 赛博朋克霓虹色调
-        if (this.question.options) { // Multiple choice
-            const colors = ['#ff00de', '#00ffcc', '#00ccff', '#ffcc00']; // 霓虹色调
-            this.color = colors[Math.floor(Math.random() * colors.length)];
-        } else { // True/False
-            this.color = this.question.correctAnswer === 'TRUE' ? '#00ff66' : '#ff3377';
-        }
+        // 统一使用单选题的颜色：霓虹青色
+        this.color = '#00ffcc'; // 固定使用霓虹青色
     }
 
     update() {
