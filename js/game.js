@@ -1175,6 +1175,8 @@ function gameOver() {
     // 如果游戏已经结束，不再执行
     if (!gameActive) return;
     
+    console.log("Game over - initializing review mode...");
+    
     gameActive = false;
     clearInterval(gameLoop);
     
@@ -1202,6 +1204,7 @@ function gameOver() {
     document.querySelector('.question-area').classList.add('game-over');
     
     // Enable question review by making question blocks clickable
+    console.log("Enabling question review...", currentQuestions.length, "questions available");
     enableQuestionReview();
     
     gameOverScreen.classList.remove('hidden');
@@ -1585,6 +1588,12 @@ function updateHealth() {
 
 // Update question statistics in the left panel
 function renderQuestionStats() {
+    if (!statsContainerElement) {
+        console.error("Stats container element not found");
+        return;
+    }
+    
+    // Clear existing stats
     statsContainerElement.innerHTML = '';
     
     const statHeader = document.createElement('h3');
@@ -1596,33 +1605,40 @@ function renderQuestionStats() {
     const statsGrid = document.createElement('div');
     statsGrid.className = 'stats-grid';
     
+    // Create stat boxes for each question
     questionStats.forEach((status, index) => {
         const statBox = document.createElement('div');
         statBox.className = `stat-box ${status}`;
+        statBox.setAttribute('data-index', index.toString());
         statBox.textContent = index + 1;
         
         // Add tooltip showing question number
         statBox.title = `点击查看题目 #${index + 1} 详情`;
         
-        // 赛博朋克风格颜色 - 调整为更柔和的色调，问题编号使用白色
+        // 赛博朋克风格颜色
         switch(status) {
             case 'correct':
-                statBox.style.backgroundColor = '#00dd66'; // 稍微暗一点的绿色
-                statBox.style.borderColor = '#00aa44'; // 更暗的绿色边框
-                statBox.style.color = '#ffffff'; // 白色数字
-                statBox.style.boxShadow = '0 0 6px #00dd66'; // 弱化发光效果
+                statBox.style.backgroundColor = '#00dd66';
+                statBox.style.borderColor = '#00aa44';
+                statBox.style.color = '#ffffff';
+                statBox.style.boxShadow = '0 0 6px #00dd66';
                 break;
             case 'wrong':
-                statBox.style.backgroundColor = '#ee3366'; // 稍微柔和的红色
-                statBox.style.borderColor = '#aa1144'; // 更暗的红色边框
-                statBox.style.color = '#ffffff'; // 白色数字
-                statBox.style.boxShadow = '0 0 6px #ee3366'; // 弱化发光效果
+                statBox.style.backgroundColor = '#ee3366';
+                statBox.style.borderColor = '#aa1144';
+                statBox.style.color = '#ffffff';
+                statBox.style.boxShadow = '0 0 6px #ee3366';
                 break;
             case 'unanswered':
-                statBox.style.backgroundColor = 'rgba(40, 20, 80, 0.6)'; // 更深、更不透明的紫色
-                statBox.style.borderColor = '#6633aa'; // 稍微暗一点的紫色边框
-                statBox.style.color = '#e6e6ff'; // 淡蓝白色数字
+                statBox.style.backgroundColor = 'rgba(40, 20, 80, 0.6)';
+                statBox.style.borderColor = '#6633aa';
+                statBox.style.color = '#e6e6ff';
                 break;
+        }
+        
+        // Set explicit cursor style if game is over
+        if (!gameActive) {
+            statBox.style.cursor = 'pointer';
         }
         
         statsGrid.appendChild(statBox);
@@ -1630,13 +1646,14 @@ function renderQuestionStats() {
     
     statsContainerElement.appendChild(statsGrid);
     
+    // Create legend
     const statLegend = document.createElement('div');
     statLegend.className = 'stat-legend';
     
     const legendItems = [
-        { class: 'unanswered', label: '未回答', color: '#8855dd' }, // 更柔和的紫色
-        { class: 'correct', label: '正确', color: '#00dd66' }, // 稍微暗一点的绿色
-        { class: 'wrong', label: '错误', color: '#ee3366' } // 稍微柔和的红色
+        { class: 'unanswered', label: '未回答', color: '#8855dd' },
+        { class: 'correct', label: '正确', color: '#00dd66' },
+        { class: 'wrong', label: '错误', color: '#ee3366' }
     ];
     
     legendItems.forEach(item => {
@@ -1646,11 +1663,11 @@ function renderQuestionStats() {
         const legendColor = document.createElement('span');
         legendColor.className = `legend-color ${item.class}`;
         legendColor.style.backgroundColor = item.color;
-        legendColor.style.boxShadow = `0 0 4px ${item.color}`; // 减弱发光效果
+        legendColor.style.boxShadow = `0 0 4px ${item.color}`;
         
         const legendLabel = document.createElement('span');
         legendLabel.textContent = item.label;
-        legendLabel.style.color = item.color; // 匹配颜色
+        legendLabel.style.color = item.color;
         
         legendItem.appendChild(legendColor);
         legendItem.appendChild(legendLabel);
@@ -1674,8 +1691,24 @@ function renderQuestionStats() {
     
     statsContainerElement.appendChild(statsCounter);
     
+    // Add a message to indicate question boxes are clickable after game over
+    if (!gameActive) {
+        const reviewHint = document.createElement('div');
+        reviewHint.style.marginTop = '15px';
+        reviewHint.style.color = '#00ffff';
+        reviewHint.style.fontSize = '14px';
+        reviewHint.style.textAlign = 'center';
+        reviewHint.style.padding = '8px';
+        reviewHint.style.border = '1px dashed #00ffff';
+        reviewHint.style.borderRadius = '5px';
+        reviewHint.textContent = '点击题目序号查看详情';
+        
+        statsContainerElement.appendChild(reviewHint);
+        
+        console.log("Added clickable hint for question review");
+    }
+    
     // Update combo counter based on consecutive correct answers at the end
-    // This ensures the combo count represents consecutive green boxes
     updateComboCount();
 }
 
@@ -2133,126 +2166,197 @@ window.addEventListener('load', initGame);
 
 // Enable question review functionality after game over
 function enableQuestionReview() {
-    // Hide the question detail container initially
-    questionDetailContainer.classList.add('hidden');
+    // First, hide the question detail container
+    if (questionDetailContainer) {
+        questionDetailContainer.classList.add('hidden');
+    }
     
-    // Add click event listeners to all stat boxes
+    // Clear current stat boxes and rebuild them with proper event handlers
+    renderQuestionStats();
+    
+    // After rendering the updated stats, attach new click handlers
     const statBoxes = document.querySelectorAll('.stat-box');
+    console.log(`Found ${statBoxes.length} stat boxes for question review`);
+    
+    // Remove existing handlers by cloning and replacing
     statBoxes.forEach((box, index) => {
-        box.addEventListener('click', () => {
-            // Only allow interaction after game over
-            if (!gameActive) {
-                showQuestionDetail(index);
-            }
+        const newBox = box.cloneNode(true);
+        
+        // Ensure it looks clickable
+        newBox.style.cursor = 'pointer';
+        
+        // Add a direct onclick handler
+        newBox.onclick = function(e) {
+            e.stopPropagation();
+            console.log(`Clicked on question #${index + 1}`);
+            showQuestionDetail(index);
+        };
+        
+        // Replace the original with the clone
+        if (box.parentNode) {
+            box.parentNode.replaceChild(newBox, box);
+        }
+    });
+    
+    // Ensure the close button also works
+    if (closeDetailBtn) {
+        const newCloseBtn = closeDetailBtn.cloneNode(true);
+        newCloseBtn.onclick = function(e) {
+            e.stopPropagation();
+            questionDetailContainer.classList.add('hidden');
+        };
+        
+        if (closeDetailBtn.parentNode) {
+            closeDetailBtn.parentNode.replaceChild(newCloseBtn, closeDetailBtn);
+        }
+    }
+    
+    // Add special styles to enhance the game-over appearance
+    document.querySelectorAll('.stat-box').forEach(box => {
+        // Make boxes more prominent when hoverable
+        box.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1)';
+            this.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.5)';
+        });
+        
+        box.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+            this.style.boxShadow = 'none';
         });
     });
+    
+    console.log("Question review functionality enabled");
 }
 
 // Display question details when a stat box is clicked
 function showQuestionDetail(questionIndex) {
+    console.log(`Showing details for question ${questionIndex + 1}`);
+    
+    // Sanity check
+    if (questionIndex < 0 || questionIndex >= currentQuestions.length) {
+        console.error(`Invalid question index: ${questionIndex}, max: ${currentQuestions.length - 1}`);
+        return;
+    }
+    
     // Get the question
     const question = currentQuestions[questionIndex];
-    if (!question) return;
+    if (!question) {
+        console.error(`Question not found for index ${questionIndex}`);
+        return;
+    }
     
     // Create HTML for the question detail
     let html = `<div class="question-text">${questionIndex + 1}. ${question.question}</div>`;
     
-    // Add options if it's a multiple choice question
-    if (question.options) {
-        html += '<div class="question-options">';
-        
-        // Determine if it's a multi-select question
-        const isMultiSelect = question.type === 'multiSelect';
-        
-        if (isMultiSelect) {
-            // For multi-select questions
-            const correctAnswers = question.correctAnswers;
+    try {
+        // Add options based on question type
+        if (question.options) {
+            html += '<div class="question-options">';
             
-            question.options.forEach((option, idx) => {
-                const letter = ['A', 'B', 'C', 'D'][idx];
-                const isCorrect = correctAnswers.includes(letter);
+            // Determine if it's a multi-select question
+            const isMultiSelect = question.type === 'multiSelect';
+            
+            if (isMultiSelect) {
+                // For multi-select questions
+                const correctAnswers = question.correctAnswers || [];
                 
-                const optionClass = isCorrect ? 'option-correct' : 'option-incorrect';
+                question.options.forEach((option, idx) => {
+                    const letter = ['A', 'B', 'C', 'D'][idx];
+                    const isCorrect = correctAnswers.includes(letter);
+                    
+                    const optionClass = isCorrect ? 'option-correct' : '';
+                    
+                    html += `
+                        <div class="question-option ${optionClass}">
+                            <div class="option-letter">${letter}.</div>
+                            <div class="option-text">${option}</div>
+                        </div>
+                    `;
+                });
                 
+                // Add the correct answers
                 html += `
-                    <div class="question-option ${optionClass}">
-                        <div class="option-letter">${letter}.</div>
-                        <div class="option-text">${option}</div>
+                    <div class="question-answer answer-correct">
+                        正确答案: ${correctAnswers.join(', ')}
                     </div>
                 `;
-            });
+            } else {
+                // For single-choice questions
+                const correctAnswer = question.correctAnswer || '';
+                
+                question.options.forEach((option, idx) => {
+                    const letter = ['A', 'B', 'C', 'D'][idx];
+                    const isCorrect = letter === correctAnswer;
+                    
+                    const optionClass = isCorrect ? 'option-correct' : '';
+                    
+                    html += `
+                        <div class="question-option ${optionClass}">
+                            <div class="option-letter">${letter}.</div>
+                            <div class="option-text">${option}</div>
+                        </div>
+                    `;
+                });
+                
+                // Add the correct answer
+                html += `
+                    <div class="question-answer answer-correct">
+                        正确答案: ${correctAnswer}
+                    </div>
+                `;
+            }
             
-            // Add the correct answers
-            html += `
-                <div class="question-answer answer-correct">
-                    正确答案: ${correctAnswers.join(', ')}
-                </div>
-            `;
+            html += '</div>';
         } else {
-            // For single-choice questions
-            const correctAnswer = question.correctAnswer;
+            // True/False question
+            const correctAnswer = question.correctAnswer === 'TRUE' ? '是' : '否';
             
-            question.options.forEach((option, idx) => {
-                const letter = ['A', 'B', 'C', 'D'][idx];
-                const isCorrect = letter === correctAnswer;
-                
-                const optionClass = isCorrect ? 'option-correct' : '';
-                
-                html += `
-                    <div class="question-option ${optionClass}">
-                        <div class="option-letter">${letter}.</div>
-                        <div class="option-text">${option}</div>
-                    </div>
-                `;
-            });
-            
-            // Add the correct answer
             html += `
+                <div class="question-options">
+                    <div class="question-option ${question.correctAnswer === 'TRUE' ? 'option-correct' : ''}">
+                        <div class="option-letter">✓</div>
+                        <div class="option-text">是</div>
+                    </div>
+                    <div class="question-option ${question.correctAnswer === 'FALSE' ? 'option-correct' : ''}">
+                        <div class="option-letter">✗</div>
+                        <div class="option-text">否</div>
+                    </div>
+                </div>
                 <div class="question-answer answer-correct">
                     正确答案: ${correctAnswer}
                 </div>
             `;
         }
         
-        html += '</div>';
-    } else {
-        // True/False question
-        const correctAnswer = question.correctAnswer === 'TRUE' ? '是' : '否';
+        // Add user's answer status
+        const userAnswerStatus = questionStats[questionIndex];
+        let userAnswerHtml = '';
         
-        html += `
-            <div class="question-options">
-                <div class="question-option ${question.correctAnswer === 'TRUE' ? 'option-correct' : ''}">
-                    <div class="option-letter">✓</div>
-                    <div class="option-text">是</div>
-                </div>
-                <div class="question-option ${question.correctAnswer === 'FALSE' ? 'option-correct' : ''}">
-                    <div class="option-letter">✗</div>
-                    <div class="option-text">否</div>
-                </div>
-            </div>
-            <div class="question-answer answer-correct">
-                正确答案: ${correctAnswer}
-            </div>
-        `;
+        if (userAnswerStatus === 'correct') {
+            userAnswerHtml = '<div class="question-answer answer-correct">您的回答: 正确 ✓</div>';
+        } else if (userAnswerStatus === 'wrong') {
+            userAnswerHtml = '<div class="question-answer answer-incorrect">您的回答: 错误 ✗</div>';
+        } else {
+            userAnswerHtml = '<div class="question-answer">您未回答此题</div>';
+        }
+        
+        html += userAnswerHtml;
+        
+        // Update the container and show it
+        if (questionDetailContent) {
+            questionDetailContent.innerHTML = html;
+            questionDetailContainer.classList.remove('hidden');
+            
+            // Make sure it's visible within viewport
+            questionDetailContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            console.log("Question detail displayed successfully");
+        } else {
+            console.error("Question detail content element not found");
+        }
+    } catch (error) {
+        console.error("Error displaying question detail:", error);
     }
-    
-    // Add user's answer status
-    const userAnswerStatus = questionStats[questionIndex];
-    let userAnswerHtml = '';
-    
-    if (userAnswerStatus === 'correct') {
-        userAnswerHtml = '<div class="question-answer answer-correct">您的回答: 正确</div>';
-    } else if (userAnswerStatus === 'wrong') {
-        userAnswerHtml = '<div class="question-answer answer-incorrect">您的回答: 错误</div>';
-    } else {
-        userAnswerHtml = '<div class="question-answer">您未回答此题</div>';
-    }
-    
-    html += userAnswerHtml;
-    
-    // Update the container and show it
-    questionDetailContent.innerHTML = html;
-    questionDetailContainer.classList.remove('hidden');
 }
 
 // Add event handler for the close button

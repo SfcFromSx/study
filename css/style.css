@@ -24,6 +24,8 @@ body {
     overflow-y: auto;
     border-right: 1px solid #2a2a60;
     box-shadow: inset -5px 0 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 10;
 }
 
 /* Statistics Container */
@@ -679,7 +681,20 @@ button:hover {
     padding: 15px;
     margin-top: 20px;
     margin-bottom: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 12px rgba(0, 200, 255, 0.3);
+    border: 1px solid rgba(0, 200, 255, 0.3);
+    animation: glow 2s ease-in-out infinite alternate;
+    z-index: 100;
+    position: relative;
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 12px rgba(0, 200, 255, 0.3);
+    }
+    to {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(0, 200, 255, 0.6);
+    }
 }
 
 .question-detail-container h3 {
@@ -687,6 +702,7 @@ button:hover {
     color: #9f9fff;
     text-align: center;
     position: relative;
+    text-shadow: 0 0 5px rgba(159, 159, 255, 0.5);
 }
 
 .close-btn {
@@ -699,22 +715,29 @@ button:hover {
     font-size: 22px;
     cursor: pointer;
     padding: 0 5px;
+    transition: all 0.3s ease;
 }
 
 .close-btn:hover {
     color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    transform: scale(1.2);
 }
 
 .question-detail-content {
-    padding: 10px;
-    background-color: rgba(30, 30, 60, 0.5);
+    padding: 15px;
+    background-color: rgba(30, 30, 60, 0.7);
     border-radius: 8px;
+    border: 1px solid rgba(100, 100, 255, 0.2);
 }
 
 .question-text {
     font-size: 16px;
     margin-bottom: 15px;
     line-height: 1.4;
+    color: #fff;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed rgba(100, 200, 255, 0.3);
 }
 
 .question-options {
@@ -722,13 +745,21 @@ button:hover {
 }
 
 .question-option {
-    padding: 5px 0;
+    padding: 8px 0;
     display: flex;
+    transition: all 0.3s ease;
+    border-radius: 5px;
+    padding-left: 5px;
+}
+
+.question-option:hover {
+    background-color: rgba(60, 60, 100, 0.5);
 }
 
 .option-letter {
     width: 25px;
     font-weight: bold;
+    color: #9f9fff;
 }
 
 .option-text {
@@ -738,10 +769,15 @@ button:hover {
 .option-correct {
     color: #4caf50;
     font-weight: bold;
+    background-color: rgba(76, 175, 80, 0.1);
+    border-radius: 5px;
+    border-left: 3px solid #4caf50;
 }
 
 .option-incorrect {
     color: #ff5252;
+    text-decoration: line-through;
+    opacity: 0.7;
 }
 
 .question-answer {
@@ -753,8 +789,34 @@ button:hover {
 
 .answer-correct {
     color: #4caf50;
+    text-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
 }
 
 .answer-incorrect {
     color: #ff5252;
+    text-shadow: 0 0 5px rgba(255, 82, 82, 0.5);
+}
+
+/* Enhanced stat-box styles for review mode */
+.game-over .stat-box {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer !important;
+}
+
+.game-over .stat-box:hover {
+    transform: translateY(-3px) scale(1.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+.game-over .stat-box.correct:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 8px rgba(76, 175, 80, 0.7);
+}
+
+.game-over .stat-box.wrong:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 8px rgba(255, 82, 82, 0.7);
+}
+
+.game-over .stat-box.unanswered:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 8px rgba(100, 100, 255, 0.7);
 } 
