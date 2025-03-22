@@ -17,7 +17,7 @@ const BULLET_TYPES = {
     D: { key: 'f', color: '#ff9800', text: 'D' },
     TRUE: { key: 'w', color: '#4caf50', text: '✓' },
     FALSE: { key: 'e', color: '#ff5252', text: '✗' },
-    SUBMIT: { key: ' ', color: '#9c27b0', text: '✓' }
+    SUBMIT: { key: ' ', color: '#9c27b0', text: '😊' }
 };
 
 // 游戏难度
@@ -42,6 +42,9 @@ let shieldCount = 0;
 let isInvincible = false;
 let gameLoop;
 let questionStats = []; // For tracking question status
+let comboCount = 0; // 连击计数
+let comboTimer = null; // 连击计时器
+let fireworks = []; // 烟花特效数组
 
 // 题库和难度相关变量
 let selectedBankId = null;
@@ -465,6 +468,68 @@ class Enemy {
     }
 }
 
+// Firework class for special effects
+class Firework {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.particles = [];
+        this.color = color || this.getRandomColor();
+        this.lifespan = 60; // frames
+        this.init();
+    }
+    
+    init() {
+        // Create particles
+        for (let i = 0; i < 30; i++) {
+            const speed = 1 + Math.random() * 3;
+            const angle = Math.random() * Math.PI * 2;
+            this.particles.push({
+                x: 0,
+                y: 0,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                alpha: 1,
+                size: 2 + Math.random() * 4
+            });
+        }
+    }
+    
+    getRandomColor() {
+        const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+    
+    update() {
+        this.lifespan--;
+        
+        this.particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.alpha = Math.max(0, p.alpha - 0.02);
+        });
+    }
+    
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        
+        this.particles.forEach(p => {
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+        });
+        
+        ctx.restore();
+    }
+    
+    isDead() {
+        return this.lifespan <= 0;
+    }
+}
+
 // Game initialization
 function initGame() {
     canvas = document.getElementById('game-canvas');
@@ -656,6 +721,8 @@ function startGame() {
     health = MAX_HEALTH;
     bullets = [];
     enemies = [];
+    fireworks = [];
+    comboCount = 0;
     currentQuestionIndex = 0; // 重置当前题目索引
     shieldCount = 0;
     isInvincible = false;
@@ -736,6 +803,18 @@ function gameUpdate() {
         bullet.draw();
     });
     
+    // Update fireworks
+    fireworks = fireworks.filter(fw => !fw.isDead());
+    fireworks.forEach(fw => {
+        fw.update();
+        fw.draw();
+    });
+    
+    // Draw combo count if active
+    if (comboCount > 1) {
+        drawComboCount();
+    }
+    
     // Update enemies
     const remainingEnemies = [];
     
@@ -754,6 +833,12 @@ function gameUpdate() {
                     // Correct answer and enemy is not fully shielded
                     score += 100 * (enemy.shields + 1); // More points for shielded enemies
                     updateScore();
+                    
+                    // Increment combo and refresh timer
+                    incrementCombo();
+                    
+                    // Create fireworks for enemy destruction
+                    createFireworks(enemy.x + enemy.width/2, enemy.y);
                     
                     // Update question stats
                     questionStats[enemy.questionIndex] = 'correct';
@@ -790,6 +875,9 @@ function gameUpdate() {
                         }
                         bullets.splice(i, 1);
                         
+                        // Reset combo on wrong answer
+                        resetCombo();
+                        
                         // Update question stats
                         questionStats[enemy.questionIndex] = 'wrong';
                         renderQuestionStats();
@@ -824,6 +912,9 @@ function gameUpdate() {
                     return;
                 }
             }
+            
+            // Reset combo when enemy passes bottom
+            resetCombo();
             
             // Update question stats
             questionStats[enemy.questionIndex] = 'wrong';
@@ -1046,6 +1137,82 @@ function togglePause() {
         resumeGame();
     } else {
         pauseGame();
+    }
+}
+
+// Function to draw combo count with large text
+function drawComboCount() {
+    const fontSize = Math.min(72, 30 + comboCount * 2); // Size increases with combo
+    ctx.font = `bold ${fontSize}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // Text shadow for better visibility
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+    ctx.shadowBlur = 5;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+    
+    // Determine color based on combo size
+    let comboColor;
+    if (comboCount >= 10) {
+        comboColor = '#ff0000'; // Red for 10+
+    } else if (comboCount >= 5) {
+        comboColor = '#ff9900'; // Orange for 5+
+    } else if (comboCount >= 3) {
+        comboColor = '#ffff00'; // Yellow for 3+
+    } else {
+        comboColor = '#ffffff'; // White for 2
+    }
+    
+    // Draw combo text
+    ctx.fillStyle = comboColor;
+    ctx.fillText(`${comboCount} COMBO!`, GAME_WIDTH / 2, 100);
+    
+    // Reset shadow
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+}
+
+// Increment combo counter
+function incrementCombo() {
+    comboCount++;
+    
+    // Clear existing timer
+    if (comboTimer) {
+        clearTimeout(comboTimer);
+    }
+    
+    // Set timer to reset combo after 3 seconds
+    comboTimer = setTimeout(() => {
+        resetCombo();
+    }, 3000);
+    
+    // Create special effects for milestone combos
+    if (comboCount == 5 || comboCount == 10 || comboCount == 15 || comboCount == 20) {
+        // Create multiple fireworks for milestone
+        for (let i = 0; i < 5; i++) {
+            const x = Math.random() * GAME_WIDTH;
+            const y = 100 + Math.random() * 200;
+            createFireworks(x, y);
+        }
+    }
+}
+
+// Reset combo counter
+function resetCombo() {
+    comboCount = 0;
+    if (comboTimer) {
+        clearTimeout(comboTimer);
+        comboTimer = null;
+    }
+}
+
+// Create fireworks at specified position
+function createFireworks(x, y, count = 1) {
+    for (let i = 0; i < count; i++) {
+        fireworks.push(new Firework(x, y));
     }
 }
 

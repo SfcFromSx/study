@@ -32,10 +32,12 @@
             
             <!-- 题库选择界面 -->
             <div id="question-bank-screen">
-                <h2>选择题库</h2>
-                <div id="question-banks-container" class="question-banks-grid">
-                    <!-- 题库列表将动态加载 -->
-                    <div class="loading-message">加载题库中...</div>
+                <div class="difficulty-selector">
+                    <h3>选择题库</h3>
+                    <div id="question-banks-container" class="question-banks-grid">
+                        <!-- 题库列表将动态加载 -->
+                        <div class="loading-message">加载题库中...</div>
+                    </div>
                 </div>
                 
                 <!-- 难度选择部分 -->
@@ -57,7 +59,7 @@
                     </div>
                 </div>
                 
-                <button id="select-bank-button" disabled>选择这个题库</button>
+                <button id="select-bank-button" disabled>确认</button>
             </div>
             
             <!-- 开始界面 -->
@@ -69,7 +71,8 @@
                 <p>操作说明:</p>
                 <p>移动: 左右方向键<br>
                    射击: A, B, C, D, W (✅), E (❌)<br>
-                   暂停/继续: 空格键</p>
+                   提交: 空格键 (😊)<br>
+                   连击: 连续答对题目可获得连击加成!</p>
                 
                 <button id="start-button">开始游戏</button>
                 <button id="change-bank-button">更换题库</button>
