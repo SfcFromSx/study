@@ -4,7 +4,7 @@
   "questions": {
     "multipleChoice": [
       {
-        "question": "被称为"世界古代七大奇迹"之一，位于埃及的建筑是什么？",
+        "question": "被称为世界古代七大奇迹之一，位于埃及的建筑是什么？",
         "options": ["巴比伦空中花园", "亚历山大灯塔", "吉萨金字塔", "阿尔忒弥斯神庙"],
         "correctAnswer": "C"
       },

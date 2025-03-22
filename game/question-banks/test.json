@@ -1,0 +1,35 @@
+{
+    "name": "测试题库",
+    "description": "用于测试不同题型的小型题库",
+    "questions": {
+        "multipleChoice": [
+            {
+                "question": "以下哪个是正确的单选题答案？",
+                "options": [
+                    "这是错误选项",
+                    "这是正确选项",
+                    "这也是错误选项",
+                    "这还是错误选项"
+                ],
+                "correctAnswer": "B"
+            },
+            {
+                "question": "下面哪些是编程语言？(多选)",
+                "options": [
+                    "JavaScript",
+                    "HTML",
+                    "Python",
+                    "Excel"
+                ],
+                "type": "multiSelect",
+                "correctAnswers": ["A", "C"]
+            }
+        ],
+        "trueFalse": [
+            {
+                "question": "HTML是一种编程语言",
+                "correctAnswer": "FALSE"
+            }
+        ]
+    }
+} 

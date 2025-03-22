@@ -16,7 +16,8 @@ const BULLET_TYPES = {
     C: { key: 'd', color: '#2196f3', text: 'C' },
     D: { key: 'f', color: '#ff9800', text: 'D' },
     TRUE: { key: 'w', color: '#4caf50', text: '✓' },
-    FALSE: { key: 'e', color: '#ff5252', text: '✗' }
+    FALSE: { key: 'e', color: '#ff5252', text: '✗' },
+    SUBMIT: { key: ' ', color: '#9c27b0', text: '✓' }
 };
 
 // 游戏难度
@@ -33,6 +34,7 @@ let player;
 let bullets = [];
 let enemies = [];
 let currentQuestions = [];
+let currentQuestionIndex = 0; // 当前题目索引
 let score = 0;
 let health = MAX_HEALTH;
 let canvas, ctx;
@@ -67,11 +69,10 @@ const selectedSampleSizeElement = document.getElementById('selected-sample-size'
 // Player class
 class Player {
     constructor() {
-        this.width = 50;
-        this.height = 60;
+        this.width = 40;
+        this.height = 40;
         this.x = GAME_WIDTH / 2 - this.width / 2;
-        this.y = GAME_HEIGHT - this.height - 20;
-        this.speed = PLAYER_SPEED;
+        this.y = GAME_HEIGHT - this.height - 10;
         this.moveLeft = false;
         this.moveRight = false;
         
@@ -86,12 +87,13 @@ class Player {
     }
 
     update() {
-        if (this.moveLeft) this.x -= this.speed;
-        if (this.moveRight) this.x += this.speed;
-
-        // Keep player within boundaries
-        if (this.x < 0) this.x = 0;
-        if (this.x > GAME_WIDTH - this.width) this.x = GAME_WIDTH - this.width;
+        // Move player based on keyboard input
+        if (this.moveLeft) {
+            this.x = Math.max(0, this.x - PLAYER_SPEED);
+        }
+        if (this.moveRight) {
+            this.x = Math.min(GAME_WIDTH - this.width, this.x + PLAYER_SPEED);
+        }
     }
 
     draw() {
@@ -136,7 +138,26 @@ class Player {
         ctx.fill();
     }
 
+    move(direction) {
+        if (gamePaused) return;
+        
+        if (direction === 'left') {
+            this.moveLeft = true;
+            this.moveRight = false;
+        } else if (direction === 'right') {
+            this.moveRight = true;
+            this.moveLeft = false;
+        }
+    }
+    
+    stop() {
+        this.moveLeft = false;
+        this.moveRight = false;
+    }
+
     shoot(bulletType) {
+        if (gamePaused) return;
+        
         const bullet = new Bullet(
             this.x + this.width / 2 - 5,
             this.y,
@@ -212,6 +233,9 @@ class Enemy {
         this.maxShields = 3;
         this.question = currentQuestions[questionIndex];
         this.hitbox = { x: 0, y: 0, width: 0, height: 0 }; // 添加命中判定区域
+        
+        // 记录多选题已选中的选项
+        this.selectedAnswers = [];
         
         // Determine color based on question type
         if (this.question.options) { // Multiple choice
@@ -345,12 +369,25 @@ class Enemy {
             const optionsY = boxY + Math.min(lines.length, maxDisplayLines + 1) * lineHeight + 25;
             const optionLetters = ['A', 'B', 'C', 'D'];
             
+            // 显示是否为多选题
+            if (question.type === 'multiSelect') {
+                ctx.font = '12px Arial';
+                ctx.fillStyle = textColor;
+                ctx.fillText('(多选)', boxX + 15, optionsY - 15);
+            }
+            
             // 最多显示4个选项
             const maxOptions = 4;
             question.options.slice(0, maxOptions).forEach((option, index) => {
                 ctx.fillStyle = textColor; // 选项也使用相同颜色
+                
+                // 对于多选题，已选中的选项前面添加勾选标记
+                const prefix = question.type === 'multiSelect' && 
+                              this.selectedAnswers.includes(optionLetters[index]) 
+                              ? '✓ ' : '';
+                
                 ctx.font = '13px Arial';
-                ctx.fillText(`${optionLetters[index]}: ${option}`, boxX + 15, optionsY + (index * lineHeight));
+                ctx.fillText(`${prefix}${optionLetters[index]}: ${option}`, boxX + 15, optionsY + (index * lineHeight));
             });
         } else {
             // Show it's a True/False question
@@ -384,7 +421,42 @@ class Enemy {
     checkCorrectHit(bulletType) {
         const question = currentQuestions[this.questionIndex];
         
-        if (question.options) { // Multiple choice
+        // 如果是提交按钮
+        if (bulletType === 'SUBMIT') {
+            // 对于多选题，验证所有选中的答案是否正确
+            if (question.type === 'multiSelect') {
+                // 检查是否所有必选项都已选中
+                const allRequiredSelected = question.correctAnswers.every(
+                    answer => this.selectedAnswers.includes(answer)
+                );
+                
+                // 检查是否有错选项
+                const noWrongSelection = this.selectedAnswers.every(
+                    answer => question.correctAnswers.includes(answer)
+                );
+                
+                // 必须既包含所有必选项，又不包含错误选项
+                return allRequiredSelected && noWrongSelection;
+            }
+            
+            // 单选题和判断题，提交按钮无效
+            return false;
+        }
+        
+        // 处理多选题的选项选择
+        if (question.type === 'multiSelect' && ['A', 'B', 'C', 'D'].includes(bulletType)) {
+            // 选项已经选中，则取消选择
+            if (this.selectedAnswers.includes(bulletType)) {
+                this.selectedAnswers = this.selectedAnswers.filter(a => a !== bulletType);
+            } else {
+                // 选项未选中，则添加到已选列表
+                this.selectedAnswers.push(bulletType);
+            }
+            
+            // 选择选项时不摧毁敌人，只标记
+            return false;
+        }
+        else if (question.options) { // 单选题
             return bulletType === question.correctAnswer;
         } else { // True/False
             return (bulletType === 'TRUE' && question.correctAnswer === 'TRUE') ||
@@ -449,9 +521,9 @@ async function initQuestionBanks() {
             bankElement.className = 'question-bank-item';
             bankElement.dataset.id = bank.id;
             
-            // 计算默认采样数量：题目总数，但最大为100
+            // 计算默认采样数量：使用实际题目总数
             const totalQuestions = bank.count || 0;
-            const defaultSampleSize = Math.min(totalQuestions, 100);
+            const defaultSampleSize = totalQuestions; // 默认使用全部题目
             bankElement.dataset.totalQuestions = totalQuestions;
             
             // 题库信息部分
@@ -584,6 +656,7 @@ function startGame() {
     health = MAX_HEALTH;
     bullets = [];
     enemies = [];
+    currentQuestionIndex = 0; // 重置当前题目索引
     shieldCount = 0;
     isInvincible = false;
     
@@ -610,7 +683,7 @@ function startGame() {
     gameLoop = setInterval(gameUpdate, 1000 / 60); // 60 FPS
     
     // Spawn enemies periodically
-    spawnEnemies();
+    spawnEnemy();
 }
 
 // Restart the game
@@ -692,35 +765,44 @@ function gameUpdate() {
                     // Mark this enemy as destroyed
                     enemyDestroyed = true;
                     
-                    // Generate a random new question index
-                    const newQuestionIndex = Math.floor(Math.random() * currentQuestions.length);
-                    
                     break; // Exit the bullet loop since enemy is destroyed
                 } else {
-                    // Wrong answer or enemy is fully shielded
-                    if (enemy.shields < enemy.maxShields) {
-                        if (selectedDifficulty === DIFFICULTY.ADVANCED || selectedDifficulty === DIFFICULTY.EXPERT) {
-                            // 高级和资深难度下，一次答错就将敌人升级到无敌状态
-                            enemy.shields = enemy.maxShields;
-                        } else {
-                            // 简单难度下，每次答错给敌人增加一个护盾
-                            enemy.addShield();
-                        }
+                    // 检查是否是多选题选项选择
+                    const question = currentQuestions[enemy.questionIndex];
+                    const isMultiSelectOption = question.type === 'multiSelect' && 
+                                               ['A', 'B', 'C', 'D'].includes(bullet.type);
+                    
+                    // 对于多选题的选项选择，不视为错误，只移除子弹
+                    if (isMultiSelectOption) {
+                        bullets.splice(i, 1);
                     }
-                    bullets.splice(i, 1);
-                    
-                    // Update question stats
-                    questionStats[enemy.questionIndex] = 'wrong';
-                    renderQuestionStats();
-                    
-                    // Check if player gets invincible
-                    shieldCount++;
-                    if (shieldCount >= 3 && !isInvincible) {
-                        isInvincible = true;
-                        setTimeout(() => {
-                            isInvincible = false;
-                            shieldCount = 0;
-                        }, 5000); // 5 seconds of invincibility
+                    // 对于错误答案或SUBMIT判定错误的情况
+                    else {
+                        // Wrong answer or enemy is fully shielded
+                        if (enemy.shields < enemy.maxShields) {
+                            if (selectedDifficulty === DIFFICULTY.ADVANCED || selectedDifficulty === DIFFICULTY.EXPERT) {
+                                // 高级和资深难度下，一次答错就将敌人升级到无敌状态
+                                enemy.shields = enemy.maxShields;
+                            } else {
+                                // 简单难度下，每次答错给敌人增加一个护盾
+                                enemy.addShield();
+                            }
+                        }
+                        bullets.splice(i, 1);
+                        
+                        // Update question stats
+                        questionStats[enemy.questionIndex] = 'wrong';
+                        renderQuestionStats();
+                        
+                        // Check if player gets invincible
+                        shieldCount++;
+                        if (shieldCount >= 3 && !isInvincible) {
+                            isInvincible = true;
+                            setTimeout(() => {
+                                isInvincible = false;
+                                shieldCount = 0;
+                            }, 5000); // 5 seconds of invincibility
+                        }
                     }
                 }
             }
@@ -767,23 +849,43 @@ function gameUpdate() {
     }
 }
 
-// Spawn enemies periodically
-function spawnEnemies() {
+// 生成一个新敌人，按顺序出题
+function spawnEnemy() {
     if (!gameActive || gamePaused) return;
     
     // 如果屏幕上已经有敌人，不再生成新敌人
     if (enemies.length > 0) {
         // 每秒检查一次屏幕上是否有敌人
-        setTimeout(spawnEnemies, 1000);
+        setTimeout(spawnEnemy, 1000);
         return;
     }
     
-    // 屏幕上没有敌人，立即生成一个新敌人
-    const questionIndex = Math.floor(Math.random() * currentQuestions.length);
-    enemies.push(new Enemy(questionIndex));
+    // 检查是否还有未回答的题目
+    if (currentQuestionIndex < currentQuestions.length) {
+        // 按顺序取下一道题
+        const questionIndex = currentQuestionIndex;
+        enemies.push(new Enemy(questionIndex));
+        currentQuestionIndex++; // 递增题目索引
+    } else {
+        // 所有题目都已放出，检查是否还有未回答的题目
+        const unansweredExists = questionStats.some(status => status === 'unanswered');
+        
+        if (!unansweredExists) {
+            // 所有题目已回答，游戏胜利
+            if (health > 0) {
+                score += health * 500; // 奖励剩余生命值
+                updateScore();
+                setTimeout(() => {
+                    alert(`恭喜！您完成了所有题目！最终得分：${score}`);
+                    gameOver();
+                }, 500);
+                return;
+            }
+        }
+    }
     
-    // 稍微延迟再次检查，避免连续生成太多敌人
-    setTimeout(spawnEnemies, 500);
+    // 固定延迟检查
+    setTimeout(spawnEnemy, 1000);
 }
 
 // Update score display
@@ -878,67 +980,72 @@ function renderQuestionStats() {
 
 // Handle keyboard input
 function handleKeyDown(e) {
+    const key = e.key.toLowerCase();
+    
     if (!gameActive) return;
     
-    switch (e.key.toLowerCase()) {
-        case ' ': // Spacebar
-            togglePause();
-            break;
-        case 'arrowleft':
-            player.moveLeft = true;
-            break;
-        case 'arrowright':
-            player.moveRight = true;
-            break;
-        case 'a':
-            if (!gamePaused) player.shoot('A');
-            break;
-        case 's':
-            if (!gamePaused) player.shoot('B');
-            break;
-        case 'd':
-            if (!gamePaused) player.shoot('C');
-            break;
-        case 'f':
-            if (!gamePaused) player.shoot('D');
-            break;
-        case 'w':
-            if (!gamePaused) player.shoot('TRUE');
-            break;
-        case 'e':
-            if (!gamePaused) player.shoot('FALSE');
-            break;
+    if (key === 'arrowleft') {
+        player.move('left');
+    } else if (key === 'arrowright') {
+        player.move('right');
+    } else if (key === 'a') {
+        player.shoot('A');
+    } else if (key === 's') {
+        player.shoot('B');
+    } else if (key === 'd') {
+        player.shoot('C');
+    } else if (key === 'f') {
+        player.shoot('D');
+    } else if (key === 'w') {
+        player.shoot('TRUE');
+    } else if (key === 'e') {
+        player.shoot('FALSE');
+    } else if (key === ' ') { // 空格键
+        if (gamePaused) {
+            resumeGame();
+        } else {
+            // 如果游戏未暂停，发射提交子弹
+            player.shoot('SUBMIT');
+        }
     }
 }
 
 function handleKeyUp(e) {
-    if (!gameActive) return;
+    const key = e.key.toLowerCase();
     
-    switch (e.key.toLowerCase()) {
-        case 'arrowleft':
-            player.moveLeft = false;
-            break;
-        case 'arrowright':
-            player.moveRight = false;
-            break;
+    if (key === 'arrowleft' || key === 'arrowright') {
+        player.stop();
+    } else if (key === ' ' && !gamePaused) { // 空格键松开且游戏未暂停状态
+        // 什么都不做，避免暂停游戏
+    } else if (key === ' ') { // 空格键松开且游戏已暂停
+        pauseGame();
     }
 }
 
-// Pause/Resume game
-function togglePause() {
-    gamePaused = !gamePaused;
-    
-    if (gamePaused) {
-        // Show pause overlay
+// 暂停游戏
+function pauseGame() {
+    if (gameActive && !gamePaused) {
+        gamePaused = true;
         pauseOverlay.classList.remove('hidden');
-    } else {
-        // Hide pause overlay
+        cancelAnimationFrame(gameLoop);
+    }
+}
+
+// 恢复游戏
+function resumeGame() {
+    if (gameActive && gamePaused) {
+        gamePaused = false;
         pauseOverlay.classList.add('hidden');
-        
-        // Restart enemy spawning if it was paused
-        if (gameActive && enemies.length === 0) {
-            spawnEnemies();
-        }
+        gameLoop = requestAnimationFrame(updateGame);
+    }
+}
+
+// 切换暂停状态
+function togglePause() {
+    if (gamePaused) {
+        resumeGame();
+    } else {
+        pauseGame();
     }
 }
 

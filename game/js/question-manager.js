@@ -22,7 +22,24 @@ async function initQuestionManager() {
             // 如果index.json不存在，手动扫描题库文件夹
             await scanQuestionBanks();
         } else {
+            // 加载基本信息
             availableQuestionBanks = await response.json();
+            
+            // 动态加载每个题库的题目数量
+            for (const bank of availableQuestionBanks) {
+                try {
+                    const data = await loadQuestionBank(bank.id);
+                    // 确保name和description存在
+                    bank.name = data.name || bank.id;
+                    bank.description = data.description || '';
+                    // 动态计算题目数量
+                    bank.count = countQuestions(data);
+                } catch (error) {
+                    console.error(`加载题库 ${bank.id} 详情失败:`, error);
+                    // 初始化计数为0
+                    bank.count = 0;
+                }
+            }
         }
         return availableQuestionBanks;
     } catch (error) {
@@ -33,6 +50,18 @@ async function initQuestionManager() {
             { id: 'science', name: '科学知识', file: 'science.json' },
             { id: 'history', name: '历史知识', file: 'history.json' }
         ];
+        
+        // 即使使用备用方案，也尝试加载题目数量
+        for (const bank of availableQuestionBanks) {
+            try {
+                const data = await loadQuestionBank(bank.id);
+                bank.count = countQuestions(data);
+            } catch (error) {
+                console.error(`加载备用题库 ${bank.id} 详情失败:`, error);
+                bank.count = 0;
+            }
+        }
+        
         return availableQuestionBanks;
     }
 }
@@ -102,7 +131,8 @@ async function loadQuestionBank(bankId) {
  */
 function countQuestions(bank) {
     let count = 0;
-    if (bank.questions) {
+    if (bank && bank.questions) {
+        // 多选题和单选题都在multipleChoice数组中
         if (bank.questions.multipleChoice) {
             count += bank.questions.multipleChoice.length;
         }
@@ -110,7 +140,7 @@ function countQuestions(bank) {
             count += bank.questions.trueFalse.length;
         }
     }
-    return count;
+    return count || 0; // 确保返回有效数字
 }
 
 /**
@@ -151,17 +181,55 @@ function getRandomQuestions(count = currentSampleSize) {
     const multipleChoice = currentQuestionBank.questions.multipleChoice || [];
     const trueFalse = currentQuestionBank.questions.trueFalse || [];
     
-    // 计算需要的多选题和判断题数量
-    // 我们保持原始比例：80%多选题，20%判断题
-    const mcCount = Math.floor(count * 0.8);
-    const tfCount = count - mcCount;
+    // 获取题库中所有可用题目
+    const totalMC = multipleChoice.length;
+    const totalTF = trueFalse.length;
+    const totalQuestions = totalMC + totalTF;
+    
+    // 如果请求数量大于总题目数，调整为总题目数
+    const actualCount = Math.min(count, totalQuestions);
+    
+    if (totalQuestions === 0) {
+        return [];
+    }
+    
+    // 保持原始比例，但考虑实际可用题目数量
+    let mcCount, tfCount;
+    
+    if (totalMC === 0) {
+        mcCount = 0;
+        tfCount = Math.min(actualCount, totalTF);
+    } else if (totalTF === 0) {
+        tfCount = 0;
+        mcCount = Math.min(actualCount, totalMC);
+    } else {
+        // 有两种类型题目时，尽量保持80/20比例
+        mcCount = Math.min(Math.floor(actualCount * 0.8), totalMC);
+        tfCount = Math.min(actualCount - mcCount, totalTF);
+        
+        // 如果一种类型不足，另一种补充
+        if (mcCount < Math.floor(actualCount * 0.8)) {
+            tfCount = Math.min(actualCount - mcCount, totalTF);
+        }
+        if (tfCount < actualCount - mcCount) {
+            mcCount = Math.min(actualCount - tfCount, totalMC);
+        }
+    }
     
     // 随机采样
     const randomMC = getRandomSample(multipleChoice, mcCount);
     const randomTF = getRandomSample(trueFalse, tfCount);
     
-    // 合并结果
-    return [...randomMC, ...randomTF];
+    // 合并结果并再次洗牌，确保题目类型混合
+    const combinedQuestions = [...randomMC, ...randomTF];
+    
+    // 对合并后的结果再次随机洗牌
+    for (let i = combinedQuestions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [combinedQuestions[i], combinedQuestions[j]] = [combinedQuestions[j], combinedQuestions[i]];
+    }
+    
+    return combinedQuestions;
 }
 
 /**
