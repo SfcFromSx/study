@@ -17,7 +17,7 @@ const BULLET_TYPES = {
     D: { key: 'f', color: '#ffcc00', text: 'D' }, // 霓虹金黄
     TRUE: { key: 'w', color: '#00ff66', text: '✓' }, // 霓虹绿
     FALSE: { key: 'e', color: '#ff3377', text: '✗' }, // 霓虹红
-    SUBMIT: { key: ' ', color: '#bb33ff', text: '→' } // 霓虹紫
+    SUBMIT: { key: ' ', color: '#bb33ff', text: '🔘' } // 霓虹紫
 };
 
 // 游戏难度
@@ -557,16 +557,6 @@ class Enemy {
         if (question.options) {
             const optionsY = textStartY + Math.min(lines.length, maxDisplayLines + 1) * lineHeight + 10;
             const optionLetters = ['A', 'B', 'C', 'D'];
-            
-            // 显示是否为多选题
-            if (question.type === 'multiSelect') {
-                // 移除多选题标签显示，因为已经移到标题处
-                
-                // 保留提交指引
-                ctx.fillStyle = '#ffcc00'; // 霓虹金黄
-                ctx.font = 'bold 16px "Orbitron", "Rajdhani", Arial, sans-serif';
-                ctx.fillText('[空格键提交]', boxX + 15, optionsY - 18);
-            }
             
             // 创建选项背景和边框
             ctx.save();

@@ -4,7 +4,7 @@ A learning-based game that combines quiz questions with shooting gameplay, allow
 
 [中文版](README.md)
 
-![Game Screenshot](assets/learnginggame.png)
+![Game Screenshot](assets/learninggame.png)
 
 ## How to Play
 
@@ -17,7 +17,7 @@ A learning-based game that combines quiz questions with shooting gameplay, allow
    - `F`: Option D
    - `W`: True (✓)
    - `E`: False (✗)
-   - `Space`: Submit (→) (for multi-select questions)
+   - `Space`: Submit (🔘) (for multi-select questions)
 4. After the game ends, you can click on question numbers in the left panel to review questions
 
 ![Question Review](assets/questioncheck.png)

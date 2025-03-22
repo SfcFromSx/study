@@ -203,7 +203,7 @@ body {
     writing-mode: vertical-rl;
     text-orientation: upright;
     font-size: 72px;
-    color: rgba(80, 200, 255, 0.03);
+    color: rgba(80, 200, 255, 0.06);
     font-weight: bold;
     pointer-events: none; /* 确保不会干扰游戏操作 */
     height: 80%;
