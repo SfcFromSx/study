@@ -2,6 +2,8 @@
 
 一款结合问答与射击的学习型游戏，边玩边学习知识点。
 
+[English Version](README_EN.md)
+
 ![游戏画面](assets/learnginggame.png)
 
 ## 游戏玩法
