@@ -470,19 +470,21 @@ class Enemy {
 
 // Firework class for special effects
 class Firework {
-    constructor(x, y, color) {
+    constructor(x, y, color, size = 1) {
         this.x = x;
         this.y = y;
         this.particles = [];
         this.color = color || this.getRandomColor();
         this.lifespan = 60; // frames
+        this.size = size; // Size multiplier
         this.init();
     }
     
     init() {
         // Create particles
-        for (let i = 0; i < 30; i++) {
-            const speed = 1 + Math.random() * 3;
+        const particleCount = 20 + Math.floor(this.size * 15); // More particles for larger fireworks
+        for (let i = 0; i < particleCount; i++) {
+            const speed = (1 + Math.random() * 3) * this.size;
             const angle = Math.random() * Math.PI * 2;
             this.particles.push({
                 x: 0,
@@ -490,13 +492,17 @@ class Firework {
                 vx: Math.cos(angle) * speed,
                 vy: Math.sin(angle) * speed,
                 alpha: 1,
-                size: 2 + Math.random() * 4
+                size: (2 + Math.random() * 3) * this.size // Larger particles for bigger fireworks
             });
         }
     }
     
     getRandomColor() {
-        const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+        // Enhanced colors with brighter options for major milestones
+        const colors = [
+            '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff',
+            '#ff5500', '#ff0055', '#55ff00', '#00ff55', '#5500ff', '#5555ff'
+        ];
         return colors[Math.floor(Math.random() * colors.length)];
     }
     
@@ -1142,20 +1148,39 @@ function togglePause() {
 
 // Function to draw combo count with large text
 function drawComboCount() {
-    const fontSize = Math.min(72, 30 + comboCount * 2); // Size increases with combo
+    // Determine message based on combo count
+    let comboMessage;
+    let fontSize;
+    
+    if (comboCount >= 20) {
+        comboMessage = "20连击！！！毕业！！！";
+        fontSize = 80; // Largest font
+    } else if (comboCount >= 10) {
+        comboMessage = "10连击，够了够了别练了！";
+        fontSize = 64; // Large font
+    } else if (comboCount >= 5) {
+        comboMessage = "5连击，太牛了！";
+        fontSize = 56; // Medium-large font
+    } else {
+        comboMessage = `${comboCount} COMBO!`;
+        fontSize = Math.min(48, 30 + comboCount * 2); // Size increases with combo
+    }
+    
     ctx.font = `bold ${fontSize}px Arial`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
     // Text shadow for better visibility
     ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-    ctx.shadowBlur = 5;
-    ctx.shadowOffsetX = 2;
-    ctx.shadowOffsetY = 2;
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetX = 3;
+    ctx.shadowOffsetY = 3;
     
     // Determine color based on combo size
     let comboColor;
-    if (comboCount >= 10) {
+    if (comboCount >= 20) {
+        comboColor = '#ff00ff'; // Magenta for 20+
+    } else if (comboCount >= 10) {
         comboColor = '#ff0000'; // Red for 10+
     } else if (comboCount >= 5) {
         comboColor = '#ff9900'; // Orange for 5+
@@ -1165,9 +1190,19 @@ function drawComboCount() {
         comboColor = '#ffffff'; // White for 2
     }
     
-    // Draw combo text
+    // Add pulsing effect for high combos
+    let scale = 1.0;
+    if (comboCount >= 5) {
+        scale = 1.0 + 0.05 * Math.sin(Date.now() / 100);
+    }
+    
+    // Draw combo text with slight animation
+    ctx.save();
+    ctx.translate(GAME_WIDTH / 2, 100);
+    ctx.scale(scale, scale);
     ctx.fillStyle = comboColor;
-    ctx.fillText(`${comboCount} COMBO!`, GAME_WIDTH / 2, 100);
+    ctx.fillText(comboMessage, 0, 0);
+    ctx.restore();
     
     // Reset shadow
     ctx.shadowBlur = 0;
@@ -1190,13 +1225,37 @@ function incrementCombo() {
     }, 3000);
     
     // Create special effects for milestone combos
-    if (comboCount == 5 || comboCount == 10 || comboCount == 15 || comboCount == 20) {
-        // Create multiple fireworks for milestone
-        for (let i = 0; i < 5; i++) {
+    if (comboCount === 20) {
+        // Graduation celebration - massive fireworks display
+        for (let i = 0; i < 20; i++) {
+            setTimeout(() => {
+                const x = Math.random() * GAME_WIDTH;
+                const y = 50 + Math.random() * 300;
+                createFireworks(x, y, 2);
+            }, i * 100); // Staggered fireworks for dramatic effect
+        }
+    }
+    else if (comboCount === 10) {
+        // Impressive milestone - big fireworks
+        for (let i = 0; i < 10; i++) {
             const x = Math.random() * GAME_WIDTH;
-            const y = 100 + Math.random() * 200;
+            const y = 80 + Math.random() * 200;
+            createFireworks(x, y, 2);
+        }
+    }
+    else if (comboCount === 5) {
+        // First milestone - medium fireworks
+        for (let i = 0; i < 7; i++) {
+            const x = Math.random() * GAME_WIDTH;
+            const y = 100 + Math.random() * 150;
             createFireworks(x, y);
         }
+    }
+    else if (comboCount > 1) {
+        // Regular fireworks for any combo
+        const x = GAME_WIDTH / 2 + (Math.random() * 200 - 100);
+        const y = 120;
+        createFireworks(x, y);
     }
 }
 
@@ -1210,9 +1269,17 @@ function resetCombo() {
 }
 
 // Create fireworks at specified position
-function createFireworks(x, y, count = 1) {
-    for (let i = 0; i < count; i++) {
-        fireworks.push(new Firework(x, y));
+function createFireworks(x, y, size = 1) {
+    if (size >= 2) {
+        // For larger fireworks, create multiple colors
+        for (let i = 0; i < size; i++) {
+            const offsetX = (Math.random() - 0.5) * 30 * size;
+            const offsetY = (Math.random() - 0.5) * 30 * size;
+            fireworks.push(new Firework(x + offsetX, y + offsetY, null, size));
+        }
+    } else {
+        // Simple single firework
+        fireworks.push(new Firework(x, y, null, size));
     }
 }
 
