@@ -547,7 +547,22 @@ function initGame() {
     // Initialize event listeners
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
-    startButton.addEventListener('click', startGame);
+    
+    // 移除和重新添加按钮监听器
+    const startButtonEl = document.getElementById('start-button');
+    if (startButtonEl) {
+        console.log('Found start button, attaching click listener');
+        // 移除已有的事件监听器，避免重复
+        startButtonEl.removeEventListener('click', startGame);
+        // 添加新的事件监听器
+        startButtonEl.addEventListener('click', function(e) {
+            console.log('Start button clicked via listener');
+            startGame();
+        });
+    } else {
+        console.error('Start button not found!');
+    }
+    
     restartButton.addEventListener('click', restartGame);
     changeBankButton.addEventListener('click', showQuestionBankScreen);
     changeBankButtonGameover.addEventListener('click', showQuestionBankScreen);
@@ -719,50 +734,62 @@ function showQuestionBankScreen() {
 function startGame() {
     console.log('startGame called, selectedBankId:', selectedBankId);
     
-    if (!selectedBankId) {
-        alert('请先选择一个题库');
-        return;
+    try {
+        if (!selectedBankId) {
+            alert('请先选择一个题库');
+            return;
+        }
+        
+        gameActive = true;
+        gamePaused = false;
+        score = 0;
+        health = MAX_HEALTH;
+        bullets = [];
+        enemies = [];
+        fireworks = [];
+        comboCount = 0;
+        currentQuestionIndex = 0; // 重置当前题目索引
+        shieldCount = 0;
+        isInvincible = false;
+        
+        // Reset UI displays
+        if (comboDisplayElement) comboDisplayElement.textContent = '0';
+        
+        // Hide start screen and pause overlay
+        startScreen.classList.add('hidden');
+        gameOverScreen.classList.add('hidden');
+        questionBankScreen.classList.add('hidden');
+        pauseOverlay.classList.add('hidden');
+        
+        // Initialize player
+        player = new Player();
+        
+        // Get random questions
+        try {
+            currentQuestions = QuestionManager.getRandomQuestions(selectedSampleSize);
+            console.log('Loaded', currentQuestions.length, 'questions');
+            questionStats = Array(currentQuestions.length).fill('unanswered');
+        } catch (err) {
+            console.error('Failed to get questions:', err);
+            alert('加载题目失败: ' + err.message);
+            return;
+        }
+        
+        // Update UI
+        updateScore();
+        updateHealth();
+        renderQuestionStats();
+        
+        // Start game loop
+        if (gameLoop) clearInterval(gameLoop);
+        gameLoop = setInterval(gameUpdate, 1000 / 60); // 60 FPS
+        
+        // Spawn enemies periodically
+        spawnEnemy();
+    } catch (error) {
+        console.error('Error starting game:', error);
+        alert('游戏启动失败，请查看控制台获取详细信息');
     }
-    
-    gameActive = true;
-    gamePaused = false;
-    score = 0;
-    health = MAX_HEALTH;
-    bullets = [];
-    enemies = [];
-    fireworks = [];
-    comboCount = 0;
-    currentQuestionIndex = 0; // 重置当前题目索引
-    shieldCount = 0;
-    isInvincible = false;
-    
-    // Reset UI displays
-    comboDisplayElement.textContent = '0';
-    
-    // Hide start screen and pause overlay
-    startScreen.classList.add('hidden');
-    gameOverScreen.classList.add('hidden');
-    questionBankScreen.classList.add('hidden');
-    pauseOverlay.classList.add('hidden');
-    
-    // Initialize player
-    player = new Player();
-    
-    // Get random questions
-    currentQuestions = QuestionManager.getRandomQuestions(selectedSampleSize);
-    questionStats = Array(currentQuestions.length).fill('unanswered');
-    
-    // Update UI
-    updateScore();
-    updateHealth();
-    renderQuestionStats();
-    
-    // Start game loop
-    if (gameLoop) clearInterval(gameLoop);
-    gameLoop = setInterval(gameUpdate, 1000 / 60); // 60 FPS
-    
-    // Spawn enemies periodically
-    spawnEnemy();
 }
 
 // Restart the game
@@ -1125,7 +1152,9 @@ function pauseGame() {
     if (gameActive && !gamePaused) {
         gamePaused = true;
         pauseOverlay.classList.remove('hidden');
-        cancelAnimationFrame(gameLoop);
+        if (gameLoop) {
+            clearInterval(gameLoop);
+        }
     }
 }
 
@@ -1290,6 +1319,54 @@ function createFireworks(x, y, size = 1) {
         fireworks.push(new Firework(x, y, null, size));
     }
 }
+
+// Test function to diagnose QuestionManager
+function testQuestionManager() {
+    console.log('Testing QuestionManager...');
+    try {
+        // Check if QuestionManager object exists
+        console.log('QuestionManager exists:', !!QuestionManager);
+        
+        if (QuestionManager) {
+            // Check methods
+            console.log('Methods available:', {
+                init: typeof QuestionManager.init === 'function',
+                setCurrentBank: typeof QuestionManager.setCurrentBank === 'function',
+                getRandomQuestions: typeof QuestionManager.getRandomQuestions === 'function'
+            });
+            
+            // Check current bank state
+            console.log('Current bank ID:', selectedBankId);
+            console.log('Sample size:', selectedSampleSize);
+        }
+        
+        // Find and log status of start button
+        const startBtn = document.getElementById('start-button');
+        console.log('Start button exists:', !!startBtn);
+        if (startBtn) {
+            console.log('Start button class list:', startBtn.classList);
+            console.log('Start button is visible:', !startBtn.closest('.hidden'));
+            
+            // Add a direct event handler for testing
+            startBtn.onclick = function() {
+                console.log('Direct onclick handler triggered');
+                startGame();
+            };
+        }
+        
+        return true;
+    } catch (err) {
+        console.error('Test failed:', err);
+        return false;
+    }
+}
+
+// Run test during load
+window.addEventListener('load', function() {
+    setTimeout(() => {
+        testQuestionManager();
+    }, 1000); // Run test 1 second after page load
+});
 
 // Initialize the game when the page loads
 window.addEventListener('load', initGame); 
